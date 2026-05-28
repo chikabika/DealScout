@@ -3,7 +3,8 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { CreditCard } from 'lucide-react'
+import { CreditCard, User } from 'lucide-react'
+import { LogoutButton } from './LogoutButton'
 
 const NAV_ITEMS = [
   { label: 'Dashboard', href: '/dashboard' },
@@ -90,6 +91,23 @@ export default function DashboardNav() {
         <CreditCard size={15} />
         Billing
       </Link>
+
+      <Link
+        href="/dashboard/profile"
+        className={[
+          'flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
+          pathname.startsWith('/dashboard/profile')
+            ? 'bg-white/10 text-zinc-100'
+            : 'text-zinc-400 hover:bg-white/5 hover:text-zinc-200',
+        ].join(' ')}
+      >
+        <User size={15} />
+        Profile
+      </Link>
+
+      <LogoutButton
+        className="flex items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-200"
+      />
 
       {/* Plan badge */}
       {badgeLabel && (

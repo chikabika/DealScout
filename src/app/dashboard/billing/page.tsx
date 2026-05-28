@@ -6,6 +6,9 @@ import { auth } from '@/lib/auth'
 import { getDb } from '@/lib/db'
 import { searches, users } from '@/lib/schema'
 import { getPlan, PLANS } from '@/lib/plans'
+import { getPaddlePriceIdForPlan } from '@/lib/paddle'
+import { ManagePaddleButton } from './ManagePaddleButton'
+import { PaddleCheckoutButton } from './PaddleCheckoutButton'
 
 // ─── Progress bar ─────────────────────────────────────────────────────────────
 
@@ -28,11 +31,18 @@ function ProgressBar({ used, max }: { used: number; max: number }) {
 function CompactPlanCard({
   plan,
   isCurrent,
+  userId,
+  email,
+  paddleCustomerId,
 }: {
   plan: (typeof PLANS)[keyof typeof PLANS]
   isCurrent: boolean
+  userId: string
+  email: string
+  paddleCustomerId?: string | null
 }) {
   const isPopular = 'popular' in plan && plan.popular
+  const paddlePriceId = getPaddlePriceIdForPlan(plan.id)
 
   return (
     <div
@@ -73,13 +83,28 @@ function CompactPlanCard({
         ))}
       </ul>
 
-      {!isCurrent && (
+      {!isCurrent && plan.id === 'free' && (
         <Link
-          href={plan.price === 0 ? '/pricing' : `/dashboard/billing?plan=${plan.id}`}
-          className="mt-5 block rounded-lg bg-emerald-600 py-2 text-center text-xs font-semibold text-white hover:bg-emerald-500 transition-colors"
+          href="/pricing"
+          className="mt-5 block rounded-lg border border-white/10 py-2 text-center text-xs font-semibold text-zinc-300 hover:border-white/20 hover:text-zinc-100 transition-colors"
         >
-          {plan.price > 0 ? `Upgrade to ${plan.name}` : 'Switch to Free'}
+          Switch to Free
         </Link>
+      )}
+
+      {!isCurrent && plan.id !== 'free' && (
+        <div className="mt-5">
+          <PaddleCheckoutButton
+            planId={plan.id}
+            priceId={paddlePriceId}
+            userId={userId}
+            email={email}
+            customerId={paddleCustomerId}
+            className="block w-full rounded-lg bg-emerald-600 py-2 text-center text-xs font-semibold text-white hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60 transition-colors"
+          >
+            Upgrade to {plan.name}
+          </PaddleCheckoutButton>
+        </div>
       )}
     </div>
   )
@@ -93,22 +118,30 @@ export default async function BillingPage() {
     redirect('/login?callbackUrl=/dashboard/billing')
   }
 
+  const userId = session.user.id
+  const sessionEmail = session.user.email ?? ''
   const db = getDb()
 
   const [user] = await db
     .select({
+      id: users.id,
+      email: users.email,
+      name: users.name,
       plan: users.plan,
       scrapesUsedThisMonth: users.scrapesUsedThisMonth,
       scrapesResetAt: users.scrapesResetAt,
+      paddleCustomerId: users.paddleCustomerId,
+      paddleSubscriptionId: users.paddleSubscriptionId,
+      paddleSubscriptionStatus: users.paddleSubscriptionStatus,
     })
     .from(users)
-    .where(eq(users.id, session.user.id))
+    .where(eq(users.id, userId))
     .limit(1)
 
   const [{ count: searchCount }] = await db
     .select({ count: sql<number>`cast(count(*) as int)` })
     .from(searches)
-    .where(eq(searches.userId, session.user.id))
+    .where(eq(searches.userId, userId))
 
   const plan = getPlan(user?.plan ?? 'free')
   const scrapesUsed = user?.scrapesUsedThisMonth ?? 0
@@ -155,22 +188,25 @@ export default async function BillingPage() {
               <p className="mt-1 text-xl text-zinc-400">{plan.priceLabel}</p>
             </div>
             {plan.id === 'free' ? (
-              <Link
-                href="/pricing"
-                className="rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
+              <PaddleCheckoutButton
+                planId="pro"
+                priceId={getPaddlePriceIdForPlan('pro')}
+                userId={userId}
+                email={user?.email ?? sessionEmail}
+                customerId={user?.paddleCustomerId}
+                className="rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Upgrade to unlock more
-              </Link>
+                Upgrade to Pro
+              </PaddleCheckoutButton>
             ) : (
-              <button
-                disabled
-                className="rounded-xl border border-white/10 px-6 py-2.5 text-sm font-medium text-zinc-400 cursor-not-allowed"
-                title="Stripe portal coming soon"
-              >
-                Manage subscription
-              </button>
+              <ManagePaddleButton className="rounded-xl border border-white/10 px-6 py-2.5 text-sm font-medium text-zinc-300 transition-colors hover:border-white/20 hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-60" />
             )}
           </div>
+          {user?.paddleSubscriptionStatus && (
+            <p className="mt-4 text-xs text-zinc-500">
+              Paddle subscription status: <span className="text-zinc-300">{user.paddleSubscriptionStatus}</span>
+            </p>
+          )}
         </div>
 
         {/* Usage */}
@@ -220,7 +256,14 @@ export default async function BillingPage() {
           </div>
           <div className="mt-4 grid gap-4 sm:grid-cols-3">
             {(Object.values(PLANS) as (typeof PLANS)[keyof typeof PLANS][]).map((p) => (
-              <CompactPlanCard key={p.id} plan={p} isCurrent={p.id === plan.id} />
+              <CompactPlanCard
+                key={p.id}
+                plan={p}
+                isCurrent={p.id === plan.id}
+                userId={userId}
+                email={user?.email ?? sessionEmail}
+                paddleCustomerId={user?.paddleCustomerId}
+              />
             ))}
           </div>
         </div>

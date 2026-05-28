@@ -40,7 +40,12 @@ export const users = pgTable("users", {
   scrapesResetAt: timestamp("scrapes_reset_at", { mode: "date" }),
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
+  paddleCustomerId: text("paddle_customer_id"),
+  paddleSubscriptionId: text("paddle_subscription_id"),
+  paddleSubscriptionStatus: text("paddle_subscription_status"),
+  paddlePriceId: text("paddle_price_id"),
   aiCallsThisMonth: integer("ai_calls_this_month").notNull().default(0),
+  lastSeenAt: timestamp("last_seen_at", { mode: "date" }),
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow(),
 });
 
