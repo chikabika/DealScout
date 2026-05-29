@@ -11,7 +11,6 @@ export default function Home() {
           </span>
           <span className="px-3 py-2">Searches</span>
           <span className="px-3 py-2">Listings</span>
-          <span className="px-3 py-2">Alerts</span>
         </nav>
       </aside>
       <section className="flex items-center px-6 py-12 sm:px-10">

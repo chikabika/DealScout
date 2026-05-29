@@ -12,7 +12,9 @@
     "db:seed": "tsx scripts/seed.ts",
     "refresh-images": "tsx scripts/refresh-images.ts",
     "decode-titles": "tsx scripts/decode-titles.ts",
-    "test-bedrock": "tsx scripts/test-bedrock.ts"
+    "test-bedrock": "tsx scripts/test-bedrock.ts",
+    "test-craigslist": "tsx scripts/test-craigslist.ts",
+    "test-craigslist-actor": "tsx scripts/test-craigslist-actor.ts"
   },
   "dependencies": {
     "@anthropic-ai/bedrock-sdk": "^0.29.2",

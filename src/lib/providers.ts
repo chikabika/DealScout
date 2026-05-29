@@ -16,7 +16,7 @@ export type Provider = {
   name: string
   shortName: string
   logo: string
-  logoUrl: string
+  logoUrl: string | null
   brandColor: string
   enabled: boolean
   supportedFilters: (
@@ -40,7 +40,7 @@ const FALLBACK_PROVIDER: Provider = {
   name: 'Marketplace',
   shortName: 'Marketplace',
   logo: '🏪',
-  logoUrl: '',
+  logoUrl: null,
   brandColor: '#71717a',
   enabled: false,
   supportedFilters: [],
@@ -88,10 +88,10 @@ export const PROVIDERS: Provider[] = [
     name: 'Craigslist',
     shortName: 'Craigslist',
     logo: '🪧',
-    logoUrl: '',
+    logoUrl: null,
     brandColor: '#5C218A',
-    enabled: false,
-    supportedFilters: ['city', 'state', 'minPrice', 'maxPrice', 'minYear', 'make', 'model'],
+    enabled: true,
+    supportedFilters: ['city', 'state', 'maxPrice', 'minPrice', 'minYear', 'maxMileage', 'make', 'model', 'keywords'],
     urlBuilder: () => '',
   },
   {

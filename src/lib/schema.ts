@@ -5,6 +5,7 @@ import {
   pgTable,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 
@@ -81,7 +82,7 @@ export const listings = pgTable("listings", {
   searchId: uuid("search_id")
     .notNull()
     .references(() => searches.id, { onDelete: "cascade" }),
-  externalId: text("external_id").notNull().unique(),
+  externalId: text("external_id").notNull(),
   title: text("title").notNull(),
   price: integer("price").notNull(),
   location: text("location"),
@@ -107,4 +108,6 @@ export const listings = pgTable("listings", {
   redFlags: json("red_flags").$type<string[]>(),
   aiSummary: text("ai_summary"),
   aiScoredAt: timestamp("ai_scored_at", { mode: "date" }),
-});
+}, (table) => [
+  uniqueIndex("listings_provider_external_id_unique").on(table.provider, table.externalId),
+]);

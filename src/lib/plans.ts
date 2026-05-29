@@ -32,7 +32,7 @@ export const PLANS = {
     pollingMinutes: 30,            // every 30 minutes
     minFrequencyMinutes: 30,
     allowedFrequencies: [30, 60, 120, 240, 360, 720, 1440],
-    allowedProviders: ['facebook', 'craigslist', 'offerup', 'autotrader', 'carsdotcom'],
+    allowedProviders: ['facebook', 'craigslist'],
     maxScrapesPerMonth: 25000,
     maxItemsPerRun: 75,            // listings fetched per Apify run
     maxAiCallsPerMonth: 10000,     // ~$50/mo max Bedrock cost at Sonnet pricing
@@ -40,7 +40,7 @@ export const PLANS = {
     popular: true,
     features: [
       'Up to 15 searches',
-      'All 5 marketplaces',
+      'Facebook + Craigslist',
       '30-minute polling',
       'Instant email alerts',
       '75 listings scanned per run',
@@ -58,14 +58,14 @@ export const PLANS = {
     pollingMinutes: 15,            // every 15 minutes
     minFrequencyMinutes: 15,
     allowedFrequencies: [15, 30, 60, 120, 240, 360, 720, 1440],
-    allowedProviders: ['facebook', 'craigslist', 'offerup', 'autotrader', 'carsdotcom'],
+    allowedProviders: ['facebook', 'craigslist'],
     maxScrapesPerMonth: 100000,
     maxItemsPerRun: 100,           // listings fetched per Apify run
     maxAiCallsPerMonth: 50000,
     emailMode: 'instant',
     features: [
       'Up to 50 searches',
-      'All 5 marketplaces',
+      'Facebook + Craigslist',
       '15-minute polling',
       'Instant email alerts',
       '100 listings scanned per run',

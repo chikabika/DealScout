@@ -210,7 +210,7 @@ export function SearchForm({
       <div className="mt-4">
         <h1 className="text-3xl font-semibold tracking-tight text-white">Create a new search</h1>
         <p className="mt-2 text-sm text-zinc-400">
-          We'll alert you when matching cars appear across your selected marketplaces.
+          We&apos;ll alert you when matching cars appear across your selected marketplaces.
         </p>
       </div>
 
@@ -354,7 +354,7 @@ export function SearchForm({
                 </select>
                 <FieldError message={errors.frequencyMinutes?.message} />
                 <p className="mt-1.5 text-xs text-zinc-500">
-                  How often DealScout checks Facebook for new listings.{' '}
+                  How often DealScout checks your selected marketplaces for new listings.{' '}
                   {userPlan.id === 'free' && (
                     <Link href="/pricing" className="text-emerald-400 hover:underline">
                       Upgrade for faster polling →
@@ -389,7 +389,7 @@ export function SearchForm({
                 <FieldError message={errors.state?.message} />
               </div>
             </div>
-            <p className="mt-3 text-xs text-zinc-600">We'll search this city and surrounding area</p>
+            <p className="mt-3 text-xs text-zinc-600">We&apos;ll search this city and surrounding area</p>
           </div>
 
           {/* ── Section 3: Price & Vehicle ── */}
@@ -588,7 +588,7 @@ export function SearchForm({
                   <div className="h-2 w-1/4 rounded-full bg-zinc-800" />
                 </div>
               </div>
-              <p className="mt-3 text-center text-xs text-zinc-600">Your matching deals will appear here</p>
+                <p className="mt-3 text-center text-xs text-zinc-600">Your matching deals will appear here</p>
             </div>
           </div>
         </div>

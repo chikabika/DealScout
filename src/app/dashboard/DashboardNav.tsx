@@ -10,7 +10,6 @@ const NAV_ITEMS = [
   { label: 'Dashboard', href: '/dashboard' },
   { label: 'Searches', href: '/dashboard/searches' },
   { label: 'Deals', href: '/dashboard/listings' },
-  { label: 'Alerts', href: '/dashboard/alerts' },
 ]
 
 type UsageData = {
