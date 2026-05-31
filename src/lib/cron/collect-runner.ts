@@ -9,6 +9,7 @@ import { scoreDeal } from '@/lib/enrichment/scorer'
 import { listings, searches, users, type LastRunStats } from '@/lib/schema'
 import { PROVIDERS } from '@/lib/providers'
 import { getPlan } from '@/lib/plans'
+import { runCarsDotComScraper, type CarsDotComListing } from '@/lib/scrapers/carsdotcom'
 import { runCraigslistScraper, type CraigslistListing } from '@/lib/scrapers/craigslist'
 import { sendDealAlert } from '@/lib/email'
 
@@ -65,9 +66,10 @@ interface ApifyItem {
 type RawProviderListing =
   | { provider: 'facebook'; listing: ApifyItem }
   | { provider: 'craigslist'; listing: CraigslistListing }
+  | { provider: 'carsdotcom'; listing: CarsDotComListing }
 
 type PipelineListing = {
-  provider: 'facebook' | 'craigslist'
+  provider: 'facebook' | 'craigslist' | 'carsdotcom'
   externalId: string
   title: string
   price: number
@@ -217,6 +219,26 @@ function normalizeToPipeline(raw: RawProviderListing, search: Search): PipelineL
     }
   }
 
+  if (raw.provider === 'carsdotcom') {
+    const item = raw.listing
+    return {
+      provider: 'carsdotcom',
+      externalId: item.externalId,
+      title: item.title,
+      price: item.price,
+      location: item.location,
+      url: item.url,
+      image: item.image,
+      description: item.description,
+      year: item.year,
+      make: item.make,
+      model: item.model,
+      mileage: item.mileage,
+      isSold: false,
+      isLive: true,
+    }
+  }
+
   console.log('[CRON] Unknown provider for search:', search.id)
   return null
 }
@@ -310,11 +332,30 @@ export async function runCollectionForSearch(search: Search, user: User): Promis
           make: row.make,
           model: row.model,
           keywords: row.keywords,
-        }, { maxItems: 30 })
+        }, { maxItems: 15 })
         rawProviderListings.push(...items.map((listing) => ({ listing, provider: 'craigslist' as const })))
         maxItemsRequested += 30
         await incrementScrapeCount(row, userScrapeCounts)
         if (!providersRun.includes(providerId)) providersRun.push(providerId)
+      }
+
+      if (providerId === 'carsdotcom') {
+        const items = await runCarsDotComScraper({
+          city: row.city,
+          state: row.state,
+          minPrice: row.minPrice,
+          maxPrice: row.maxPrice,
+          minYear: row.minYear,
+          maxMileage: row.maxMileage,
+          make: row.make,
+          model: row.model,
+          keywords: row.keywords,
+        }, { maxItems: 30 })
+        rawProviderListings.push(...items.map((listing) => ({ listing, provider: 'carsdotcom' as const })))
+        maxItemsRequested += 30
+        await incrementScrapeCount(row, userScrapeCounts)
+        if (!providersRun.includes(providerId)) providersRun.push(providerId)
+        console.log('[CARSDOTCOM] Added', items.length, 'listings to pipeline')
       }
     } catch (err) {
       console.error(`[CRON] Error — provider: ${providerId}, search: ${row.id}`, err)

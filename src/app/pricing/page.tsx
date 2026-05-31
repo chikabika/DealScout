@@ -141,7 +141,7 @@ export default function PricingPage() {
             Find your perfect deal-hunting plan
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-lg text-zinc-400">
-            Start free with 3 searches. Upgrade when you're ready to scale.
+            Start free with 3 searches. Upgrade when you&apos;re ready to scale.
           </p>
         </div>
 

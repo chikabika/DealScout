@@ -1,19 +1,24 @@
 import 'server-only'
 
 import { type NextRequest, NextResponse } from 'next/server'
-import { and, eq, gte, inArray } from 'drizzle-orm'
+import { and, eq, gte, inArray, isNotNull } from 'drizzle-orm'
 import { getDb } from '@/lib/db'
+import { sendDailyDigest, type DigestGroup } from '@/lib/email'
+import { getPlan } from '@/lib/plans'
 import { listings, searches, users } from '@/lib/schema'
-import { sendDailyDigest } from '@/lib/email'
 
 export const maxDuration = 800
 export const dynamic = 'force-dynamic'
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL
+  || process.env.NEXTAUTH_URL
+  || process.env.AUTH_URL
+  || 'https://your-domain.com'
+
 export async function GET(req: NextRequest) {
-  // Same auth pattern as /api/cron/scheduler
   const cronSecret = process.env.CRON_SECRET
-  const authHeader = req.headers.get('authorization')
   const isVercelCron = req.headers.get('x-vercel-cron') === '1'
+  const authHeader = req.headers.get('authorization')
   const isProduction = process.env.NODE_ENV === 'production'
 
   if (!isVercelCron) {
@@ -25,118 +30,148 @@ export async function GET(req: NextRequest) {
   }
 
   const db = getDb()
-  const startedAt = new Date()
-  console.log('[DIGEST] Starting daily digest at', startedAt.toISOString())
-
-  // Window: last 24 hours
+  const startedAt = Date.now()
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000)
 
-  // Step 1: all Free users
-  const candidates = await db
+  console.log('[DIGEST] Starting daily digest cron at', new Date().toISOString())
+
+  const freeUsers = await db
     .select({
-      userId: users.id,
+      id: users.id,
       email: users.email,
       name: users.name,
+      plan: users.plan,
     })
     .from(users)
     .where(eq(users.plan, 'free'))
 
-  console.log(`[DIGEST] ${candidates.length} Free user${candidates.length === 1 ? '' : 's'} to check`)
+  console.log(`[DIGEST] Found ${freeUsers.length} Free users to check`)
 
   const summary = { sent: 0, skipped: 0, errors: 0, totalListings: 0 }
 
-  for (const user of candidates) {
+  for (const user of freeUsers) {
     try {
-      // Step 2: get all searches for this user
+      const plan = getPlan(user.plan)
+      if (plan.emailMode !== 'digest_daily') {
+        summary.skipped++
+        continue
+      }
+
       const userSearches = await db
-        .select({ id: searches.id, name: searches.name })
+        .select({
+          id: searches.id,
+          name: searches.name,
+          providers: searches.providers,
+        })
         .from(searches)
-        .where(eq(searches.userId, user.userId))
+        .where(and(
+          eq(searches.userId, user.id),
+          eq(searches.active, true),
+        ))
 
       if (userSearches.length === 0) {
         summary.skipped++
         continue
       }
 
-      const searchIds = userSearches.map((s) => s.id)
+      const searchIds = userSearches.map((search) => search.id)
 
-      // Step 3: unalerted listings in the last 24h across all this user's searches
       const newListings = await db
-        .select()
+        .select({
+          id: listings.id,
+          searchId: listings.searchId,
+          provider: listings.provider,
+          title: listings.title,
+          price: listings.price,
+          location: listings.location,
+          url: listings.url,
+          image: listings.image,
+          year: listings.year,
+          mileage: listings.mileage,
+          dealScore: listings.dealScore,
+          aiSummary: listings.aiSummary,
+          seenAt: listings.seenAt,
+        })
         .from(listings)
-        .where(
-          and(
-            inArray(listings.searchId, searchIds),
-            eq(listings.alerted, false),
-            gte(listings.seenAt, since),
-          ),
-        )
+        .where(and(
+          inArray(listings.searchId, searchIds),
+          eq(listings.alerted, false),
+          gte(listings.seenAt, since),
+          isNotNull(listings.url),
+        ))
 
       if (newListings.length === 0) {
+        console.log(`[DIGEST] No new listings for ${user.email} — skipping`)
         summary.skipped++
         continue
       }
 
-      // Step 4: group by search (most recent first, cap at 5 per search).
-      // Collect the IDs we'll actually send so we can mark only those as alerted.
-      const sentIds: string[] = []
+      const groups: DigestGroup[] = userSearches
+        .flatMap((search) => {
+          const searchListings = newListings
+            .filter((listing) => listing.searchId === search.id)
+            .sort((a, b) => (b.dealScore ?? 0) - (a.dealScore ?? 0))
 
-      const groups = userSearches
-        .map((s) => {
-          const forThisSearch = newListings
-            .filter((l) => l.searchId === s.id)
-            .sort((a, b) => (b.seenAt?.getTime() ?? 0) - (a.seenAt?.getTime() ?? 0))
-            .slice(0, 5)
+          const providers = Array.from(
+            new Set(searchListings.map((listing) => listing.provider || 'facebook')),
+          )
 
-          sentIds.push(...forThisSearch.map((l) => l.id))
-
-          return {
-            searchName: s.name,
-            searchId:   s.id,
-            listings:   forThisSearch.map((l) => ({
-              title:    l.title,
-              price:    l.price,
-              location: l.location,
-              url:      l.url,
-              image:    l.image,
-              year:     l.year,
-              mileage:  l.mileage,
-            })),
-          }
+          return providers.map((provider) => ({
+            searchName: search.name,
+            searchId: search.id,
+            provider,
+            listings: searchListings
+              .filter((listing) => (listing.provider || 'facebook') === provider)
+              .slice(0, 5)
+              .map((listing) => ({
+                title: listing.title,
+                price: listing.price,
+                location: listing.location,
+                url: listing.url,
+                image: listing.image,
+                year: listing.year,
+                mileage: listing.mileage,
+                dealScore: listing.dealScore,
+                aiSummary: listing.aiSummary,
+              })),
+          }))
         })
-        .filter((g) => g.listings.length > 0)
+        .filter((group) => group.listings.length > 0)
 
-      const totalIncluded = sentIds.length
+      if (groups.length === 0) {
+        summary.skipped++
+        continue
+      }
 
-      // Step 5: send the digest email
+      const totalShown = groups.reduce((sum, group) => sum + group.listings.length, 0)
+
       await sendDailyDigest({
-        to:            user.email,
-        userName:      user.name,
+        to: user.email,
+        userName: user.name,
         groups,
-        totalListings: newListings.length,
+        totalNewListings: newListings.length,
+        appUrl: APP_URL,
       })
 
-      // Step 6: mark included listings as alerted so they don't appear in the next digest
       await db
         .update(listings)
         .set({ alerted: true })
-        .where(inArray(listings.id, sentIds))
+        .where(and(
+          inArray(listings.searchId, searchIds),
+          eq(listings.alerted, false),
+          gte(listings.seenAt, since),
+        ))
 
       summary.sent++
-      summary.totalListings += totalIncluded
-      console.log(
-        `[DIGEST] ✅ Sent to ${user.email} — ${totalIncluded} listing${totalIncluded === 1 ? '' : 's'} across ${groups.length} search${groups.length === 1 ? '' : 'es'}`,
-      )
+      summary.totalListings += totalShown
+      console.log(`[DIGEST] ✅ ${user.email} — ${totalShown} listings across ${groups.length} groups`)
     } catch (e) {
       summary.errors++
-      console.error(
-        `[DIGEST] ❌ Failed for ${user.email}:`,
-        e instanceof Error ? e.message : e,
-      )
+      console.error(`[DIGEST] ❌ Failed for ${user.email}:`, e instanceof Error ? e.message : e)
     }
   }
 
-  const elapsed = Date.now() - startedAt.getTime()
-  console.log('[DIGEST] Complete:', summary, `in ${(elapsed / 1000).toFixed(1)}s`)
+  const elapsed = Date.now() - startedAt
+  console.log('[DIGEST] Complete:', { ...summary, elapsedMs: elapsed })
   return NextResponse.json({ ...summary, elapsedMs: elapsed })
 }

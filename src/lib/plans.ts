@@ -32,7 +32,7 @@ export const PLANS = {
     pollingMinutes: 30,            // every 30 minutes
     minFrequencyMinutes: 30,
     allowedFrequencies: [30, 60, 120, 240, 360, 720, 1440],
-    allowedProviders: ['facebook', 'craigslist'],
+    allowedProviders: ['facebook', 'craigslist', 'carsdotcom'],
     maxScrapesPerMonth: 25000,
     maxItemsPerRun: 75,            // listings fetched per Apify run
     maxAiCallsPerMonth: 10000,     // ~$50/mo max Bedrock cost at Sonnet pricing
@@ -73,6 +73,8 @@ export const PLANS = {
       '🔥 Market value estimates',
       '🔥 Condition + red flag analysis',
       '🔥 Profit potential ranking',
+      '🏷️ Cars.com dealer inventory',
+      '🔍 Full market coverage (private + dealer)',
       'API access',
       'Priority support',
     ],

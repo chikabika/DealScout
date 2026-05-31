@@ -254,19 +254,20 @@ export function SearchForm({
 
                         // Plan-locked: not allowed on current plan
                         if (!isAllowed) {
+                          const requiredPlan = provider.id === 'carsdotcom' ? 'Dealer' : 'Pro'
                           return (
                             <Link
                               key={provider.id}
                               href="/pricing"
                               className="relative flex cursor-pointer items-center gap-3 rounded-lg border border-white/10 p-3 opacity-60 transition-colors hover:border-emerald-500/40 hover:opacity-80"
-                              title={`Upgrade to Pro to use ${provider.name}`}
+                              title={`Upgrade to ${requiredPlan} to use ${provider.name}`}
                             >
                               <span className="text-xl">{provider.logo}</span>
                               <div className="min-w-0">
                                 <span className="block text-xs font-medium leading-tight text-zinc-300">
                                   {provider.name}
                                 </span>
-                                <span className="text-[10px] text-emerald-400">Pro plan</span>
+                                <span className="text-[10px] text-emerald-400">{requiredPlan} plan</span>
                               </div>
                               <span className="absolute right-1.5 top-1.5 text-zinc-500">
                                 <Lock size={11} />

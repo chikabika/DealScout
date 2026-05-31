@@ -119,12 +119,12 @@ export const PROVIDERS: Provider[] = [
   {
     id: 'carsdotcom',
     name: 'Cars.com',
-    shortName: 'Cars',
+    shortName: 'Cars.com',
     logo: '🏷️',
-    logoUrl: '',
-    brandColor: '#D7372C',
-    enabled: false,
-    supportedFilters: ['state', 'minPrice', 'maxPrice', 'minYear', 'make', 'model'],
+    logoUrl: null,
+    brandColor: '#E1251B',
+    enabled: true,
+    supportedFilters: ['minPrice', 'maxPrice', 'minYear', 'maxMileage', 'make', 'model'],
     urlBuilder: () => '',
   },
 ]

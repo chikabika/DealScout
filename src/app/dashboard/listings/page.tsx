@@ -25,6 +25,7 @@ export default async function ListingsPage({
     .where(eq(users.id, session.user.id))
     .limit(1)
   const userPlan = (user?.plan ?? 'free') as 'free' | 'pro' | 'dealer'
+  const nowMs = new Date().getTime()
 
   const rows = await db
     .select({
@@ -61,7 +62,7 @@ export default async function ListingsPage({
     url: r.url,
     image: r.image,
     provider: r.provider,
-    seenAtMs: r.seenAt ? r.seenAt.getTime() : Date.now(),
+    seenAtMs: r.seenAt ? r.seenAt.getTime() : nowMs,
     searchName: r.searchName,
     searchId: r.searchId,
     dealScore: r.dealScore ?? null,

@@ -319,7 +319,7 @@ function NoResultsDiagnostic({ runStats }: { runStats: RunStats }) {
 
   const ranAt = s.ranAt
     ? new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(
-        Math.round((new Date(s.ranAt).getTime() - Date.now()) / 60000),
+        Math.round((new Date(s.ranAt).getTime() - new Date().getTime()) / 60000),
         'minute',
       )
     : null
@@ -503,13 +503,11 @@ function StatsBar({ rows }: { rows: DealRow[] }) {
 
 function DealScoreBadge({
   dealScore,
-  estimatedValue,
   savings,
   userPlan,
   compact = false,
 }: {
   dealScore: number | null
-  estimatedValue: number | null
   savings: number | null
   userPlan: 'free' | 'pro' | 'dealer'
   compact?: boolean
@@ -587,7 +585,6 @@ function DealCard({
   seenAtMs,
   searchName,
   dealScore,
-  estimatedValue,
   savings,
   redFlags,
   aiSummary,
@@ -637,7 +634,6 @@ function DealCard({
         <div className="absolute right-2 top-2 z-10">
           <DealScoreBadge
             dealScore={dealScore}
-            estimatedValue={estimatedValue}
             savings={savings}
             userPlan={userPlan}
             compact
@@ -711,7 +707,6 @@ function DealListRow({
   seenAtMs,
   searchName,
   dealScore,
-  estimatedValue,
   savings,
   nowMs,
   userPlan,
@@ -772,7 +767,6 @@ function DealListRow({
         <div className="mt-3 flex items-center justify-between lg:mt-0 lg:w-40 lg:flex-col lg:items-end lg:justify-center lg:gap-2 lg:pr-2">
           <DealScoreBadge
             dealScore={dealScore}
-            estimatedValue={estimatedValue}
             savings={savings}
             userPlan={userPlan}
           />

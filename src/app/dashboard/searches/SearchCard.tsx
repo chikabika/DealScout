@@ -29,6 +29,7 @@ export type SearchCardData = {
   lastSeenAtMs: number | null
   lastRunAt: number | null
   lastRunStats: LastRunStats | null
+  nowMs: number
 }
 
 // ─── Provider pill ────────────────────────────────────────────────────────────
@@ -165,9 +166,11 @@ function FilterSummary({ search }: { search: SearchCardData }) {
 function RunStatsBadge({
   lastRunAt,
   lastRunStats,
+  nowMs,
 }: {
   lastRunAt: number | null
   lastRunStats: LastRunStats | null
+  nowMs: number
 }) {
   if (!lastRunStats) return null
 
@@ -175,7 +178,7 @@ function RunStatsBadge({
 
   const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
   const timeAgo = lastRunAt
-    ? rtf.format(Math.round((lastRunAt - Date.now()) / 60000), 'minute')
+    ? rtf.format(Math.round((lastRunAt - nowMs) / 60000), 'minute')
     : null
 
   // Determine health: was the run productive, empty-by-filtering, or empty-by-source?
@@ -236,7 +239,7 @@ export function SearchCard({ search }: { search: SearchCardData }) {
 
   const lastSeenText = search.lastSeenAtMs
     ? `Last run ${new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(
-        Math.round((search.lastSeenAtMs - Date.now()) / 60000),
+        Math.round((search.lastSeenAtMs - search.nowMs) / 60000),
         'minute',
       )}`
     : 'Never run'
@@ -291,7 +294,7 @@ export function SearchCard({ search }: { search: SearchCardData }) {
 
           {/* Run stats badge (shows after first cron run) */}
           {search.lastRunStats ? (
-            <RunStatsBadge lastRunAt={search.lastRunAt} lastRunStats={search.lastRunStats} />
+            <RunStatsBadge lastRunAt={search.lastRunAt} lastRunStats={search.lastRunStats} nowMs={search.nowMs} />
           ) : (
             <p className="mt-2 text-xs text-zinc-600">
               {search.dealCount} deal{search.dealCount === 1 ? '' : 's'} found

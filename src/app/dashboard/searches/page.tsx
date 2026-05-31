@@ -59,6 +59,7 @@ export default async function SearchesPage({
   const activeCount = userSearches.filter((s) => s.active).length
   const pausedCount = userSearches.length - activeCount
   const atLimit = userSearches.length >= plan.maxSearches
+  const nowMs = new Date().getTime()
 
   // Shape data for SearchCard
   const cardData: SearchCardData[] = userSearches.map((s) => ({
@@ -82,6 +83,7 @@ export default async function SearchesPage({
       : null,
     lastRunAt: s.lastRunAt ? new Date(s.lastRunAt).getTime() : null,
     lastRunStats: s.lastRunStats ?? null,
+    nowMs,
   }))
 
   return (
@@ -93,7 +95,7 @@ export default async function SearchesPage({
             <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 shrink-0">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
             </svg>
-            Search created — hit ⚡ to run it now
+            Search created. Hit Run now to scan it.
           </div>
         )}
 
@@ -186,7 +188,7 @@ export default async function SearchesPage({
             <p className="mt-3 max-w-sm text-sm leading-6 text-zinc-400">
               Create your first search to start hunting for deals 24/7.
               <br />
-              We'll scan Facebook Marketplace and alert you instantly.
+              We&apos;ll scan Facebook Marketplace and alert you instantly.
             </p>
             <Link
               href="/dashboard/searches/new"

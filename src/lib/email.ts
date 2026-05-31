@@ -11,6 +11,7 @@ type ListingRow = {
 export type DigestGroup = {
   searchName: string
   searchId: string
+  provider: string
   listings: Array<{
     title: string
     price: number
@@ -19,6 +20,8 @@ export type DigestGroup = {
     image: string | null
     year: number | null
     mileage: number | null
+    dealScore: number | null
+    aiSummary: string | null
   }>
 }
 
@@ -130,137 +133,128 @@ export async function sendDailyDigest(params: {
   to: string
   userName: string | null
   groups: DigestGroup[]
-  totalListings: number
+  totalNewListings: number
+  appUrl: string
 }): Promise<void> {
   const apiKey = process.env.BREVO_API_KEY
   const senderEmail = process.env.SENDER_EMAIL
   if (!apiKey || !senderEmail) {
-    console.warn('[email] Brevo not configured — skipping digest')
+    console.warn('[DIGEST] Brevo not configured — skipping')
     return
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://dealscout.com'
-  const firstName = params.userName ? params.userName.split(' ')[0] : null
-  const greeting = firstName ? `Hi ${escape(firstName)},` : 'Hi there,'
-  const totalShown = params.groups.reduce((sum, g) => sum + g.listings.length, 0)
+  const firstName = params.userName?.split(' ')[0] ?? 'there'
+  const subject = `🚗 ${params.totalNewListings} new deal${params.totalNewListings === 1 ? '' : 's'} found for you today`
 
-  const moreNote =
-    params.totalListings > totalShown
-      ? `<p style="font-size:13px;color:#a1a1aa;margin:8px 0 16px;">
-           Showing top ${totalShown} of ${params.totalListings} new listings —
-           <a href="${appUrl}/dashboard/listings" style="color:#10b981;text-decoration:none;">see all on the dashboard →</a>
-         </p>`
-      : ''
+  function esc(s: string | null | undefined): string {
+    if (!s) return ''
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+  }
 
-  const groupsHtml = params.groups
-    .map(
-      (g) => `
-    <div style="margin:24px 0;">
-      <h2 style="font-size:16px;font-weight:600;color:#fff;margin:0 0 12px;padding-left:10px;border-left:3px solid #10b981;">
-        ${escape(g.searchName)}
-        <span style="font-weight:400;color:#71717a;font-size:14px;"> · ${g.listings.length} new</span>
-      </h2>
-      <table cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;">
-        ${g.listings
-          .map(
-            (l) => `
-          <tr style="border-bottom:1px solid #27272a;">
-            <td style="padding:10px 0;vertical-align:top;">
-              <table cellpadding="0" cellspacing="0" border="0" style="width:100%;">
-                <tr>
-                  <td style="width:100px;vertical-align:top;">
-                    ${
-                      l.image
-                        ? `<img src="${escape(l.image)}" alt="" width="92" height="69"
-                             style="display:block;border-radius:6px;object-fit:cover;width:92px;height:69px;" />`
-                        : `<div style="width:92px;height:69px;background:#27272a;border-radius:6px;"></div>`
-                    }
-                  </td>
-                  <td style="padding-left:12px;vertical-align:top;">
-                    <div style="font-size:14px;font-weight:500;color:#f4f4f5;line-height:1.4;margin-bottom:3px;">
-                      ${escape(l.title)}
-                    </div>
-                    <div style="font-size:12px;color:#71717a;margin-bottom:7px;">
-                      ${[
-                        l.location ? escape(l.location) : null,
-                        l.year     ? String(l.year)    : null,
-                        l.mileage  ? `${l.mileage.toLocaleString()} mi` : null,
-                      ].filter(Boolean).join(' · ')}
-                    </div>
-                    <table cellpadding="0" cellspacing="0" border="0">
-                      <tr>
-                        <td style="padding-right:12px;">
-                          <span style="font-size:16px;font-weight:700;color:#10b981;">
-                            $${l.price.toLocaleString()}
-                          </span>
-                        </td>
-                        <td>
-                          <a href="${escape(l.url)}"
-                             style="font-size:12px;color:#10b981;text-decoration:none;
-                                    border:1px solid #10b981;border-radius:5px;padding:3px 8px;">
-                            View →
-                          </a>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>`,
-          )
-          .join('')}
-      </table>
-    </div>`,
-    )
-    .join('')
+  function scoreBadge(score: number | null): string {
+    if (!score) return ''
+    const color = score >= 80 ? '#10b981' : score >= 60 ? '#f59e0b' : '#71717a'
+    const emoji = score >= 80 ? '🔥' : score >= 60 ? '👍' : ''
+    return `<span style="display:inline-block;background:${color}20;color:${color};border:1px solid ${color}40;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:600;margin-left:6px;">${score}/100 ${emoji}</span>`
+  }
 
-  const subject =
-    `🚗 ${params.totalListings} new car deal${params.totalListings === 1 ? '' : 's'} found for you`
+  const groupsHtml = params.groups.map((g) => {
+    const listingsHtml = g.listings.map((l) => `
+      <tr>
+        <td style="padding:10px 0;border-bottom:1px solid #27272a;">
+          <table cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+              <td width="96" style="vertical-align:top;padding-right:12px;">
+                ${l.image
+                  ? `<img src="${esc(l.image)}" width="96" height="72" style="display:block;border-radius:6px;object-fit:cover;width:96px;height:72px;" referrerpolicy="no-referrer" />`
+                  : `<div style="width:96px;height:72px;background:#27272a;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:24px;">🚗</div>`
+                }
+              </td>
+              <td style="vertical-align:top;">
+                <div style="font-size:14px;font-weight:500;color:#f4f4f5;line-height:1.4;margin-bottom:3px;">
+                  ${esc(l.title)}${scoreBadge(l.dealScore)}
+                </div>
+                <div style="font-size:12px;color:#71717a;margin-bottom:6px;">
+                  ${l.location ? `📍 ${esc(l.location)}` : ''}
+                  ${l.year ? ` · ${l.year}` : ''}
+                  ${l.mileage ? ` · ${l.mileage.toLocaleString()} mi` : ''}
+                </div>
+                ${l.aiSummary ? `<div style="font-size:11px;color:#a1a1aa;font-style:italic;margin-bottom:6px;">${esc(l.aiSummary)}</div>` : ''}
+                <div style="display:flex;align-items:center;gap:12px;">
+                  <span style="font-size:18px;font-weight:700;color:#10b981;">$${l.price.toLocaleString()}</span>
+                  <a href="${esc(l.url)}" style="font-size:12px;color:#10b981;text-decoration:none;font-weight:500;">View listing →</a>
+                </div>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    `).join('')
 
-  const htmlContent = `
-<!doctype html>
+    const providerLabel = g.provider === 'facebook' ? '📘 Facebook Marketplace' : g.provider === 'craigslist' ? '🪧 Craigslist' : g.provider
+
+    return `
+      <div style="margin:20px 0;">
+        <div style="margin-bottom:10px;">
+          <span style="font-size:15px;font-weight:600;color:#f4f4f5;">${esc(g.searchName)}</span>
+          <span style="font-size:12px;color:#71717a;margin-left:8px;">${providerLabel} · ${g.listings.length} new</span>
+        </div>
+        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+          ${listingsHtml}
+        </table>
+      </div>
+    `
+  }).join('<hr style="border:none;border-top:1px solid #27272a;margin:4px 0;" />')
+
+  const htmlContent = `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#09090b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-  <table cellpadding="0" cellspacing="0" border="0" style="width:100%;background:#09090b;">
-    <tr><td align="center" style="padding:40px 16px;">
-      <table cellpadding="0" cellspacing="0" border="0"
-             style="max-width:600px;width:100%;background:#18181b;border-radius:12px;overflow:hidden;border:1px solid #27272a;">
-        <tr><td style="padding:32px;">
+  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#09090b;">
+    <tr><td align="center" style="padding:32px 16px;">
+      <table cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;">
 
-          <!-- Header -->
-          <div style="margin-bottom:4px;">
+        <tr><td style="background:#18181b;border-radius:12px 12px 0 0;padding:24px 28px;border-bottom:1px solid #27272a;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:24px;">🚗</span>
             <span style="font-size:20px;font-weight:700;color:#fff;">DealScout</span>
           </div>
-          <h1 style="font-size:22px;font-weight:700;color:#fff;margin:0 0 4px;">🚗 Your Daily Deal Digest</h1>
-          <p style="font-size:14px;color:#a1a1aa;margin:0 0 20px;">
-            ${greeting} here's what DealScout found for you in the last 24 hours.
-          </p>
-
-          ${moreNote}
-          ${groupsHtml}
-
-          <!-- Upgrade CTA -->
-          <div style="margin-top:32px;padding-top:24px;border-top:1px solid #27272a;">
-            <p style="font-size:13px;color:#a1a1aa;margin:0 0 14px;">
-              <strong style="color:#f4f4f5;">Want instant alerts?</strong>
-              Upgrade to Pro for 30-minute polling and notifications the moment a new deal appears.
-            </p>
-            <a href="${appUrl}/pricing"
-               style="display:inline-block;background:#10b981;color:#fff;padding:10px 20px;
-                      border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;">
-              Upgrade to Pro →
-            </a>
-          </div>
-
-          <!-- Footer -->
-          <p style="font-size:11px;color:#52525b;margin:28px 0 0;text-align:center;line-height:1.6;">
-            You're receiving this because you have an active DealScout Free account.<br />
-            <a href="${appUrl}/dashboard" style="color:#71717a;text-decoration:none;">Go to dashboard</a>
-          </p>
-
+          <div style="font-size:13px;color:#71717a;margin-top:4px;">Your daily car deal digest</div>
         </td></tr>
+
+        <tr><td style="background:#18181b;padding:20px 28px 0;">
+          <h2 style="font-size:18px;font-weight:600;color:#fff;margin:0 0 6px;">Hi ${esc(firstName)},</h2>
+          <p style="font-size:14px;color:#a1a1aa;margin:0 0 4px;">
+            Here are <strong style="color:#10b981;">${params.totalNewListings} new listing${params.totalNewListings === 1 ? '' : 's'}</strong> matching your searches from the last 24 hours.
+          </p>
+        </td></tr>
+
+        <tr><td style="background:#18181b;padding:16px 28px;">
+          ${groupsHtml}
+        </td></tr>
+
+        <tr><td style="background:#18181b;padding:4px 28px 24px;">
+          <a href="${esc(params.appUrl)}/dashboard/listings"
+             style="display:inline-block;background:#10b981;color:#fff;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;">
+            View all deals →
+          </a>
+        </td></tr>
+
+        <tr><td style="background:#18181b;border-top:1px solid #27272a;padding:20px 28px;border-radius:0 0 12px 12px;">
+          <p style="font-size:13px;color:#71717a;margin:0 0 12px;">
+            <strong style="color:#f4f4f5;">Want instant alerts?</strong>
+            Upgrade to Pro for 30-minute polling and real-time notifications the moment a deal appears — before anyone else sees it.
+          </p>
+          <a href="${esc(params.appUrl)}/pricing"
+             style="display:inline-block;border:1px solid #10b981;color:#10b981;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;text-decoration:none;">
+            Upgrade to Pro →
+          </a>
+          <p style="font-size:11px;color:#52525b;margin:20px 0 0;">
+            You're receiving this because you have an active DealScout Free account.<br />
+            <a href="${esc(params.appUrl)}/dashboard/settings" style="color:#52525b;">Manage notifications</a>
+          </p>
+        </td></tr>
+
       </table>
     </td></tr>
   </table>
@@ -284,9 +278,11 @@ export async function sendDailyDigest(params: {
 
   if (!res.ok) {
     const errBody = await res.text().catch(() => '')
-    console.error('[email] Digest send failed:', res.status, errBody)
+    console.error('[DIGEST] Brevo send failed:', res.status, errBody)
     throw new Error(`Brevo digest failed: ${res.status}`)
   }
+
+  console.log('[DIGEST] ✅ Sent to:', params.to, `(${params.totalNewListings} listings)`)
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

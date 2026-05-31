@@ -35,9 +35,9 @@ export default async function NewSearchPage() {
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10">
           <Lock size={28} className="text-emerald-500" />
         </div>
-        <h1 className="mt-6 text-2xl font-bold text-white">You've used all your searches</h1>
+        <h1 className="mt-6 text-2xl font-bold text-white">You&apos;ve used all your searches</h1>
         <p className="mt-3 max-w-sm text-sm leading-6 text-zinc-400">
-          You're on the <span className="font-medium text-zinc-200">{plan.name}</span> plan with{' '}
+          You&apos;re on the <span className="font-medium text-zinc-200">{plan.name}</span> plan with{' '}
           {plan.maxSearches} searches. Upgrade to create more.
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
