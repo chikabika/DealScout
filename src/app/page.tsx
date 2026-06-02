@@ -71,6 +71,14 @@ const liveProviders = [
     plans: "Pro, Dealer only",
     filters: "City, state, price, year, mileage, make, model, keywords",
   },
+   {
+    name: "Cars.com",
+    id: "carsdotcom",
+    logoUrl: "https://www.google.com/s2/favicons?domain=cars.com&sz=128",
+    brandColor: "#D7372C",
+    plans: "Dealer only",
+    filters: "State, price, year, make, model",
+  },
 ];
 
 const plannedProviders = [
@@ -87,20 +95,13 @@ const plannedProviders = [
     logoUrl: "https://www.google.com/s2/favicons?domain=autotrader.com&sz=128",
     brandColor: "#FF6900",
     filters: "State, price, year, make, model",
-  },
-  {
-    name: "Cars.com",
-    id: "carsdotcom",
-    logoUrl: "https://www.google.com/s2/favicons?domain=cars.com&sz=128",
-    brandColor: "#D7372C",
-    filters: "State, price, year, make, model",
-  },
+  }
 ];
 
 const providerPlanBreakdown = [
   ["Free", "Facebook Marketplace only"],
   ["Pro", "$49/mo", "Facebook Marketplace + Craigslist"],
-  ["Dealer", "$149/mo", "Facebook Marketplace + Craigslist"],
+  ["Dealer", "$149/mo", "Facebook Marketplace + Craigslist + Cars.com"],
 ];
 
 const audience = [
@@ -113,7 +114,7 @@ const audience = [
 const faqs = [
   {
     q: "What marketplaces does DealScout support?",
-    a: "Facebook Marketplace is available on all plans. Craigslist is available on Pro and Dealer plans.",
+    a: "Facebook Marketplace is available on all plans. Craigslist is available on Pro and Dealer plans. Cars.com dealer inventory is available on the Dealer plan.",
   },
   {
     q: "How does AI deal scoring work?",

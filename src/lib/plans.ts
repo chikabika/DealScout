@@ -58,7 +58,7 @@ export const PLANS = {
     pollingMinutes: 15,            // every 15 minutes
     minFrequencyMinutes: 15,
     allowedFrequencies: [15, 30, 60, 120, 240, 360, 720, 1440],
-    allowedProviders: ['facebook', 'craigslist'],
+    allowedProviders: ['facebook', 'craigslist', 'carsdotcom'],
     maxScrapesPerMonth: 100000,
     maxItemsPerRun: 100,           // listings fetched per Apify run
     maxAiCallsPerMonth: 50000,
