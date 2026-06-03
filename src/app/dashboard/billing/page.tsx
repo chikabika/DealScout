@@ -226,8 +226,8 @@ export default async function BillingPage() {
               max={plan.maxRunsPerDay}
             />
             <UsageBar
-              label="Runs this month"
-              sublabel="Resets on the 1st"
+              label={plan.id === 'free' ? 'Total runs used' : 'Runs this month'}
+              sublabel={plan.id === 'free' ? 'Lifetime limit — never resets' : 'Resets on the 1st'}
               used={runsThisMonth}
               max={plan.maxRunsPerMonth}
             />

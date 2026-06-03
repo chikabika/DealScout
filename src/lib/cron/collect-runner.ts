@@ -279,15 +279,17 @@ export async function runCollectionForSearch(search: Search, user: User): Promis
     row.runsToday = 0
   }
 
-  // Reset monthly counter if it's a new month
-  const firstOfMonth = new Date(Date.UTC(
-    now.getUTCFullYear(), now.getUTCMonth(), 1
-  ))
-  if (!row.runsThisMonthResetAt || new Date(row.runsThisMonthResetAt) < firstOfMonth) {
-    await db.update(users)
-      .set({ runsThisMonth: 0, runsThisMonthResetAt: firstOfMonth })
-      .where(eq(users.id, row.userId))
-    row.runsThisMonth = 0
+  // Only reset monthly counter for paid plans — Free uses lifetime runs
+  if (plan.id !== 'free') {
+    const firstOfMonth = new Date(Date.UTC(
+      now.getUTCFullYear(), now.getUTCMonth(), 1
+    ))
+    if (!row.runsThisMonthResetAt || new Date(row.runsThisMonthResetAt) < firstOfMonth) {
+      await db.update(users)
+        .set({ runsThisMonth: 0, runsThisMonthResetAt: firstOfMonth })
+        .where(eq(users.id, row.userId))
+      row.runsThisMonth = 0
+    }
   }
 
   // Check daily limit
