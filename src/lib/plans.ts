@@ -15,7 +15,8 @@ export const PLANS = {
     allowedProviders: ['facebook'] as string[],
     emailMode: 'digest_daily' as const,
     aiScoring: false,
-    aiModel: null as null,
+    aiFiltering: true,
+    aiModel: 'sonnet' as const,
     features: [
       '3 searches (lifetime)',
       'Facebook Marketplace',
@@ -37,6 +38,7 @@ export const PLANS = {
     allowedProviders: ['facebook', 'craigslist'] as string[],
     emailMode: 'instant' as const,
     aiScoring: true,
+    aiFiltering: true,
     aiModel: 'sonnet' as const,
     popular: true,
     features: [
@@ -62,6 +64,7 @@ export const PLANS = {
     allowedProviders: ['facebook', 'craigslist', 'carsdotcom'] as string[],
     emailMode: 'instant' as const,
     aiScoring: true,
+    aiFiltering: true,
     aiModel: 'sonnet' as const,
     features: [
       '15 searches',
