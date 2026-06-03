@@ -14,7 +14,11 @@ const NAV_ITEMS = [
 
 type UsageData = {
   plan: { id: string; name: string; maxSearches: number }
-  usage: { searches: number }
+  usage: {
+    searches: { used: number; max: number }
+    runsToday: { used: number; max: number }
+    runsThisMonth: { used: number; max: number }
+  }
 } | null
 
 export default function DashboardNav() {
@@ -30,7 +34,7 @@ export default function DashboardNav() {
 
   const planId = usage?.plan.id ?? 'free'
   const remaining = usage
-    ? Math.max(0, usage.plan.maxSearches - usage.usage.searches)
+    ? Math.max(0, usage.plan.maxSearches - usage.usage.searches.used)
     : null
 
   const badgeClass =
