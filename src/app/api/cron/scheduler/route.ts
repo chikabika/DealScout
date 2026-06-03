@@ -43,19 +43,9 @@ export async function GET(req: NextRequest) {
   const results = await Promise.allSettled(due.map(async ({ search, user }) => {
     const plan = getPlan(user.plan)
 
-    if (user.scrapesUsedThisMonth >= plan.maxScrapesPerMonth) {
-      console.log(`[SCHEDULER] User ${user.email} hit monthly quota - skipping ${search.name}`)
-      const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1)
-      await db
-        .update(searches)
-        .set({ nextRunAt: nextMonth })
-        .where(eq(searches.id, search.id))
-      return { searchId: search.id, status: 'quota_skipped' as const }
-    }
-
     try {
       await runCollectionForSearch(search, user)
-      const freqMinutes = Math.max(search.frequencyMinutes, plan.minFrequencyMinutes)
+      const freqMinutes = Math.max(search.frequencyMinutes, plan.pollingMinutes)
       const nextRun = new Date(Date.now() + freqMinutes * 60 * 1000)
       await db
         .update(searches)
@@ -79,7 +69,6 @@ export async function GET(req: NextRequest) {
   const summary = {
     totalDue: due.length,
     ran: results.filter((r) => r.status === 'fulfilled' && r.value.status === 'ran').length,
-    quotaSkipped: results.filter((r) => r.status === 'fulfilled' && r.value.status === 'quota_skipped').length,
     errored: results.filter((r) => r.status === 'rejected' || (r.status === 'fulfilled' && r.value.status === 'error')).length,
   }
 

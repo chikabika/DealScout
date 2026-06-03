@@ -1,6 +1,8 @@
 export type CarsDotComInput = {
   city: string
   state: string
+  zipCode: string | null
+  radiusMiles: number | null
   minPrice: number | null
   maxPrice: number
   minYear: number | null
@@ -25,17 +27,100 @@ export type CarsDotComListing = {
   provider: 'carsdotcom'
 }
 
+const CITY_ZIP_MAP: Record<string, string> = {
+  // California
+  losangeles: '90001',
+  la: '90001',
+  sanfrancisco: '94102',
+  sf: '94102',
+  sandiego: '92101',
+  sanjose: '95101',
+  sacramento: '95814',
+  fresno: '93701',
+  oakland: '94601',
+  // Texas
+  houston: '77001',
+  dallas: '75201',
+  austin: '78701',
+  sanantonio: '78201',
+  fortworth: '76101',
+  // New York
+  newyork: '10001',
+  nyc: '10001',
+  brooklyn: '11201',
+  bronx: '10451',
+  // Florida
+  miami: '33101',
+  orlando: '32801',
+  tampa: '33601',
+  jacksonville: '32099',
+  // Illinois
+  chicago: '60601',
+  // Pennsylvania
+  philadelphia: '19101',
+  pittsburgh: '15201',
+  // Georgia
+  atlanta: '30301',
+  // North Carolina
+  charlotte: '28201',
+  raleigh: '27601',
+  // Arizona
+  phoenix: '85001',
+  tucson: '85701',
+  // Washington
+  seattle: '98101',
+  // Colorado
+  denver: '80201',
+  // Massachusetts
+  boston: '02101',
+  // Michigan
+  detroit: '48201',
+  // Tennessee
+  nashville: '37201',
+  memphis: '38101',
+  // Ohio
+  columbus: '43201',
+  cleveland: '44101',
+  cincinnati: '45201',
+  // Minnesota
+  minneapolis: '55401',
+  // Oregon
+  portland: '97201',
+  // Nevada
+  lasvegas: '89101',
+  // Missouri
+  stlouis: '63101',
+  kansascity: '64101',
+  // Maryland
+  baltimore: '21201',
+  // Washington DC
+  washington: '20001',
+  washingtondc: '20001',
+  dc: '20001',
+}
+
+function resolveZip(city: string): string {
+  const key = city.toLowerCase().replace(/[\s\-_,.]/g, '')
+  return CITY_ZIP_MAP[key] ?? '10001'
+}
+
 function buildCarsUrl(input: CarsDotComInput): string {
+  const zip = input.zipCode || resolveZip(input.city)
+  const radius = input.radiusMiles ?? 50
+  console.log('[CARSDOTCOM] Resolved ZIP:', zip, '| Radius:', radius, 'miles | City:', input.city)
   const params = new URLSearchParams()
   params.set('stock_type', 'used')
-  params.set('maximum_distance', '75')
-  params.set('zip', '90001')
+  params.set('zip', zip)
+  params.set('maximum_distance', String(radius))
+  params.set('sort', 'best_match_desc')
   if (input.maxPrice) params.set('price_max', String(input.maxPrice))
   if (input.minPrice) params.set('price_min', String(input.minPrice))
   if (input.minYear) params.set('year_min', String(input.minYear))
   if (input.maxMileage) params.set('mileage_max', String(input.maxMileage))
   if (input.make) params.set('makes[]', input.make.toLowerCase())
-  if (input.model) params.set('models[]', `${input.make?.toLowerCase() || ''}-${input.model?.toLowerCase() || ''}`)
+  if (input.model && input.make) {
+    params.set('models[]', `${input.make.toLowerCase()}-${input.model.toLowerCase().replace(/\s+/g, '-')}`)
+  }
   return `https://www.cars.com/shopping/results/?${params.toString()}`
 }
 

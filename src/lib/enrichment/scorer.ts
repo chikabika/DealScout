@@ -23,8 +23,8 @@ const AWS_REGION            = process.env.AWS_DEFAULT_REGION ?? 'us-east-1'
 // Allow a separate model override for scoring; falls back to the classifier's model
 const SCORER_MODEL_ID       =
   process.env.BEDROCK_SCORER_MODEL_ID ??
-  process.env.BEDROCK_MODEL_ID ??
-  'anthropic.claude-3-sonnet-20240229-v1:0'
+  process.env.BEDROCK_MODEL_ID ?? 
+  'us.anthropic.claude-sonnet-4-20250514-v1:0'
 
 const client =
   AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY
@@ -83,7 +83,7 @@ async function imageToBase64(url: string): Promise<{
 
 // ─── Scorer ───────────────────────────────────────────────────────────────────
 
-export async function scoreDeal(input: {
+export type ScoreInput = {
   imageUrl: string | null
   title: string
   description: string | null
@@ -93,16 +93,23 @@ export async function scoreDeal(input: {
   model: string | null
   mileage: number | null
   location: string | null
-}): Promise<DealScore | null> {
+}
+
+export async function scoreDeal(
+  input: ScoreInput,
+  modelId?: string,
+): Promise<DealScore | null> {
   if (!client) return null
   if (!input.imageUrl) return null
+
+  const model = modelId ?? SCORER_MODEL_ID
 
   const img = await imageToBase64(input.imageUrl)
   if (!img) return null
 
   try {
     const res = await client.messages.create({
-      model: SCORER_MODEL_ID,
+      model,
       max_tokens: 600,
       messages: [
         {

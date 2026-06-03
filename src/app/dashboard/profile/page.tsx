@@ -190,8 +190,8 @@ export default async function ProfilePage() {
             </div>
             <div className="space-y-5">
               <ProgressBar label="Searches" current={searchStats.total} max={plan.maxSearches} />
-              <ProgressBar label="Scrapes this month" current={user.scrapesUsedThisMonth} max={plan.maxScrapesPerMonth} />
-              <ProgressBar label="AI calls this month" current={user.aiCallsThisMonth} max={plan.maxAiCallsPerMonth} />
+              <ProgressBar label="Runs today" current={user.runsToday} max={plan.maxRunsPerDay} />
+              <ProgressBar label="Runs this month" current={user.runsThisMonth} max={plan.maxRunsPerMonth} />
             </div>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
@@ -237,7 +237,7 @@ export default async function ProfilePage() {
                 <div>
                   <p className="text-sm font-medium text-zinc-100">Deal scoring</p>
                   <p className="mt-1 text-sm leading-6 text-zinc-500">
-                    {plan.maxAiCallsPerMonth > 0
+                    {plan.aiScoring
                       ? 'AI scoring is enabled for your account.'
                       : 'Upgrade to Pro to unlock AI deal scoring on matching listings.'}
                   </p>

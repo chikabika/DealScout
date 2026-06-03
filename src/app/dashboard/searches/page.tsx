@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { desc, eq, inArray, sql } from 'drizzle-orm'
-import { Lock } from 'lucide-react'
+import { AlertCircle, Lock } from 'lucide-react'
 import { auth } from '@/lib/auth'
 import { getDb } from '@/lib/db'
 import { listings, searches, users } from '@/lib/schema'
@@ -22,12 +22,28 @@ export default async function SearchesPage({
   const db = getDb()
 
   const [user] = await db
-    .select({ plan: users.plan })
+    .select({
+      plan: users.plan,
+      runsToday: users.runsToday,
+      runsThisMonth: users.runsThisMonth,
+    })
     .from(users)
     .where(eq(users.id, session.user.id))
     .limit(1)
 
   const plan = getPlan(user?.plan ?? 'free')
+
+  const usage = {
+    plan: { id: plan.id },
+    runsToday: {
+      used: user?.runsToday ?? 0,
+      max: plan.maxRunsPerDay,
+    },
+    runsThisMonth: {
+      used: user?.runsThisMonth ?? 0,
+      max: plan.maxRunsPerMonth,
+    },
+  }
 
   const userSearches = await db
     .select()
@@ -96,6 +112,28 @@ export default async function SearchesPage({
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
             </svg>
             Search created. Hit Run now to scan it.
+          </div>
+        )}
+
+        {/* Daily quota warning — show when > 80% used */}
+        {usage.runsToday.used >= Math.floor(usage.runsToday.max * 0.8) && (
+          <div className="mb-6 flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
+            <div className="text-sm">
+              <span className="font-medium text-amber-300">
+                {usage.runsToday.used} of {usage.runsToday.max} daily runs used.
+              </span>
+              {' '}
+              <span className="text-amber-400/80">
+                Resets at midnight UTC.
+                {usage.plan.id === 'free' && (
+                  <> <a href="/pricing" className="underline hover:text-amber-200">Upgrade to Pro</a> for 30 runs per day.</>
+                )}
+                {usage.plan.id === 'pro' && (
+                  <> <a href="/pricing" className="underline hover:text-amber-200">Upgrade to Dealer</a> for 180 runs per day.</>
+                )}
+              </span>
+            </div>
           </div>
         )}
 

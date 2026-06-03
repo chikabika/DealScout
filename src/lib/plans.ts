@@ -2,84 +2,85 @@ export type PlanId = 'free' | 'pro' | 'dealer'
 
 export const PLANS = {
   free: {
-    id: 'free',
+    id: 'free' as const,
     name: 'Free',
     price: 0,
     priceLabel: 'Free forever',
+    // maxSearches is LIFETIME for Free plan — does not reset
     maxSearches: 3,
-    pollingMinutes: 240,           // every 4 hours
-    minFrequencyMinutes: 240,
-    allowedFrequencies: [240, 360, 720, 1440],
-    allowedProviders: ['facebook'],
-    maxScrapesPerMonth: 360,       // 3 searches × 6 polls/day × 30 days
-    maxItemsPerRun: 30,            // listings fetched per Apify run
-    maxAiCallsPerMonth: 0,         // no AI deal scoring on Free
-    emailMode: 'digest_daily',
+    pollingMinutes: 720,               // every 12 hours
+    maxRunsPerDay: 6,                  // 2 runs per search per day
+    maxRunsPerMonth: 90,               // safety ceiling
+    maxItemsPerRun: 10,
+    allowedProviders: ['facebook'] as string[],
+    emailMode: 'digest_daily' as const,
+    aiScoring: false,
+    aiModel: null as null,
     features: [
-      'Up to 3 searches',
-      'Facebook Marketplace only',
-      'Every 4 hours polling',
+      '3 searches (lifetime)',
+      'Facebook Marketplace',
+      'Twice daily alerts',
       'Daily email digest',
-      '30 listings scanned per run',
+      '6 runs per day',
     ],
   },
   pro: {
-    id: 'pro',
+    id: 'pro' as const,
     name: 'Pro',
     price: 49,
     priceLabel: '$49/mo',
-    maxSearches: 15,
-    pollingMinutes: 30,            // every 30 minutes
-    minFrequencyMinutes: 30,
-    allowedFrequencies: [30, 60, 120, 240, 360, 720, 1440],
-    allowedProviders: ['facebook', 'craigslist', 'carsdotcom'],
-    maxScrapesPerMonth: 25000,
-    maxItemsPerRun: 75,            // listings fetched per Apify run
-    maxAiCallsPerMonth: 10000,     // ~$50/mo max Bedrock cost at Sonnet pricing
-    emailMode: 'instant',
+    maxSearches: 5,
+    pollingMinutes: 240,               // every 4 hours
+    maxRunsPerDay: 30,                 // 5 searches × 6 runs/day
+    maxRunsPerMonth: 600,              // hard ceiling
+    maxItemsPerRun: 15,
+    allowedProviders: ['facebook', 'craigslist'] as string[],
+    emailMode: 'instant' as const,
+    aiScoring: true,
+    aiModel: 'sonnet' as const,
     popular: true,
     features: [
-      'Up to 15 searches',
+      '5 searches',
       'Facebook + Craigslist',
-      '30-minute polling',
+      'Every 4 hours polling',
       'Instant email alerts',
-      '75 listings scanned per run',
-      '🔥 AI Deal Scoring on every listing',
-      '🔥 Market value estimates',
-      '🔥 Condition + red flag analysis',
+      'AI deal scoring',
+      'Condition analysis + red flags',
+      '30 runs per day',
     ],
   },
   dealer: {
-    id: 'dealer',
+    id: 'dealer' as const,
     name: 'Dealer',
     price: 149,
     priceLabel: '$149/mo',
-    maxSearches: 50,
-    pollingMinutes: 15,            // every 15 minutes
-    minFrequencyMinutes: 15,
-    allowedFrequencies: [15, 30, 60, 120, 240, 360, 720, 1440],
-    allowedProviders: ['facebook', 'craigslist', 'carsdotcom'],
-    maxScrapesPerMonth: 100000,
-    maxItemsPerRun: 100,           // listings fetched per Apify run
-    maxAiCallsPerMonth: 50000,
-    emailMode: 'instant',
+    maxSearches: 15,
+    pollingMinutes: 120,               // every 2 hours
+    maxRunsPerDay: 180,                // 15 searches × 12 runs/day
+    maxRunsPerMonth: 3600,             // hard ceiling
+    maxItemsPerRun: 20,
+    allowedProviders: ['facebook', 'craigslist', 'carsdotcom'] as string[],
+    emailMode: 'instant' as const,
+    aiScoring: true,
+    aiModel: 'sonnet' as const,
     features: [
-      'Up to 50 searches',
-      'Facebook + Craigslist',
-      '15-minute polling',
+      '15 searches',
+      'Facebook + Craigslist + Cars.com',
+      'Every 2 hours polling',
       'Instant email alerts',
-      '100 listings scanned per run',
-      '🔥 AI Deal Scoring on every listing',
-      '🔥 Market value estimates',
-      '🔥 Condition + red flag analysis',
-      '🔥 Profit potential ranking',
-      '🏷️ Cars.com dealer inventory',
-      '🔍 Full market coverage (private + dealer)',
-      'API access',
-      'Priority support',
+      'AI deal scoring (Claude Sonnet 4)',
+      'Full market coverage',
+      'Priority scraping queue',
+      '180 runs per day',
     ],
   },
 } as const
+
+export type Plan = typeof PLANS[PlanId]
+
+export function getPlan(id: string): Plan {
+  return PLANS[id as PlanId] ?? PLANS.free
+}
 
 export const FREQUENCY_LABELS: Record<number, string> = {
   15: 'Every 15 minutes',
@@ -90,8 +91,4 @@ export const FREQUENCY_LABELS: Record<number, string> = {
   360: 'Every 6 hours',
   720: 'Every 12 hours',
   1440: 'Once a day',
-}
-
-export function getPlan(id: string) {
-  return PLANS[id as PlanId] ?? PLANS.free
 }

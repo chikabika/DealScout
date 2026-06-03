@@ -46,6 +46,12 @@ export const users = pgTable("users", {
   paddleSubscriptionStatus: text("paddle_subscription_status"),
   paddlePriceId: text("paddle_price_id"),
   aiCallsThisMonth: integer("ai_calls_this_month").notNull().default(0),
+  // Daily counter — resets at midnight UTC
+  runsToday: integer('runs_today').notNull().default(0),
+  runsTodayResetAt: timestamp('runs_today_reset_at', { mode: 'date' }),
+  // Monthly counter — resets on 1st of month
+  runsThisMonth: integer('runs_this_month').notNull().default(0),
+  runsThisMonthResetAt: timestamp('runs_this_month_reset_at', { mode: 'date' }),
   lastSeenAt: timestamp("last_seen_at", { mode: "date" }),
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow(),
 });
@@ -67,6 +73,8 @@ export const searches = pgTable("searches", {
   providers: json("providers").$type<string[]>().notNull().default(['facebook']),
   keywords: text("keywords"),
   blacklist: text("blacklist"),
+  zipCode: text("zip_code"),
+  radiusMiles: integer("radius_miles").default(50),
   pollingFrequency: text("polling_frequency").notNull().default('hourly'),
   frequencyMinutes: integer("frequency_minutes").notNull().default(240),
   nextRunAt: timestamp("next_run_at", { mode: "date" }),

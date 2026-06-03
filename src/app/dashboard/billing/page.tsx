@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { eq, sql } from 'drizzle-orm'
-import { Calendar, Check, Clock } from 'lucide-react'
+import { Check, Clock } from 'lucide-react'
 import { auth } from '@/lib/auth'
 import { getDb } from '@/lib/db'
 import { searches, users } from '@/lib/schema'
@@ -22,6 +22,30 @@ function ProgressBar({ used, max }: { used: number; max: number }) {
         className={`h-full rounded-full ${color} transition-all duration-300`}
         style={{ width: `${pct}%` }}
       />
+    </div>
+  )
+}
+
+// ─── Usage bar card ───────────────────────────────────────────────────────────
+
+function UsageBar({
+  label,
+  sublabel,
+  used,
+  max,
+}: {
+  label: string
+  sublabel: string
+  used: number
+  max: number
+}) {
+  return (
+    <div className="rounded-xl border border-white/5 bg-zinc-900 p-5">
+      <p className="text-xs text-zinc-500">{label}</p>
+      <p className="mt-1 text-2xl font-bold text-zinc-100">{used.toLocaleString()}</p>
+      <p className="mb-3 text-xs text-zinc-600">{sublabel}</p>
+      <ProgressBar used={used} max={max} />
+      <p className="mt-2 text-xs text-zinc-600">{used.toLocaleString()} / {max.toLocaleString()}</p>
     </div>
   )
 }
@@ -68,9 +92,9 @@ function CompactPlanCard({
       <div className="mt-3 flex items-center gap-2 rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs text-zinc-300">
         <Clock size={13} className="text-emerald-400" />
         <span>
-          Polls every {plan.minFrequencyMinutes < 60
-            ? `${plan.minFrequencyMinutes} min`
-            : `${plan.minFrequencyMinutes / 60}h`}
+          Polls every {plan.pollingMinutes < 60
+            ? `${plan.pollingMinutes} min`
+            : `${plan.pollingMinutes / 60}h`}
         </span>
       </div>
 
@@ -128,8 +152,8 @@ export default async function BillingPage() {
       email: users.email,
       name: users.name,
       plan: users.plan,
-      scrapesUsedThisMonth: users.scrapesUsedThisMonth,
-      scrapesResetAt: users.scrapesResetAt,
+      runsToday: users.runsToday,
+      runsThisMonth: users.runsThisMonth,
       paddleCustomerId: users.paddleCustomerId,
       paddleSubscriptionId: users.paddleSubscriptionId,
       paddleSubscriptionStatus: users.paddleSubscriptionStatus,
@@ -144,32 +168,8 @@ export default async function BillingPage() {
     .where(eq(searches.userId, userId))
 
   const plan = getPlan(user?.plan ?? 'free')
-  const scrapesUsed = user?.scrapesUsedThisMonth ?? 0
-
-  const now = new Date()
-  const resetAt =
-    user?.scrapesResetAt && user.scrapesResetAt > now
-      ? user.scrapesResetAt
-      : new Date(now.getFullYear(), now.getMonth() + 1, 1)
-  const daysUntilReset = Math.max(
-    1,
-    Math.ceil((resetAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)),
-  )
-
-  const usageItems = [
-    {
-      label: 'Searches',
-      used: searchCount,
-      max: plan.maxSearches,
-      suffix: `of ${plan.maxSearches}`,
-    },
-    {
-      label: 'Scrapes this month',
-      used: scrapesUsed,
-      max: plan.maxScrapesPerMonth,
-      suffix: `of ${plan.maxScrapesPerMonth.toLocaleString()}`,
-    },
-  ]
+  const runsToday = user?.runsToday ?? 0
+  const runsThisMonth = user?.runsThisMonth ?? 0
 
   return (
     <section className="px-6 py-8 sm:px-10">
@@ -211,31 +211,26 @@ export default async function BillingPage() {
 
         {/* Usage */}
         <div className="mt-6">
-          <h2 className="text-base font-semibold text-zinc-200">Usage this month</h2>
+          <h2 className="text-base font-semibold text-zinc-200">Usage</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-3">
-            {usageItems.map(({ label, used, max, suffix }) => (
-              <div
-                key={label}
-                className="rounded-xl border border-white/5 bg-zinc-900 p-5"
-              >
-                <p className="text-xs text-zinc-500">{label}</p>
-                <p className="mt-1 text-2xl font-bold text-zinc-100">{used.toLocaleString()}</p>
-                <p className="mb-3 text-xs text-zinc-600">{suffix}</p>
-                <ProgressBar used={used} max={max} />
-              </div>
-            ))}
-
-            <div className="rounded-xl border border-white/5 bg-zinc-900 p-5">
-              <p className="text-xs text-zinc-500">Resets in</p>
-              <div className="mt-1 flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-zinc-100">{daysUntilReset}</span>
-                <span className="text-sm text-zinc-400">day{daysUntilReset === 1 ? '' : 's'}</span>
-              </div>
-              <div className="mt-1 flex items-center gap-1 text-xs text-zinc-600">
-                <Calendar size={11} />
-                <span>{resetAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-              </div>
-            </div>
+            <UsageBar
+              label="Searches"
+              sublabel={plan.id === 'free' ? 'Lifetime limit' : 'Active searches'}
+              used={searchCount}
+              max={plan.maxSearches}
+            />
+            <UsageBar
+              label="Runs today"
+              sublabel="Resets at midnight UTC"
+              used={runsToday}
+              max={plan.maxRunsPerDay}
+            />
+            <UsageBar
+              label="Runs this month"
+              sublabel="Resets on the 1st"
+              used={runsThisMonth}
+              max={plan.maxRunsPerMonth}
+            />
           </div>
         </div>
 
@@ -245,7 +240,7 @@ export default async function BillingPage() {
             <div>
               <h2 className="text-base font-semibold text-zinc-200">All plans</h2>
               <p className="mt-1 text-sm text-zinc-500">
-                Free polls every 4h. Pro polls every 30min for fresher deals.
+                Free polls every 12h. Pro polls every 4h. Dealer polls every 2h.
               </p>
             </div>
             {plan.id === 'free' && (

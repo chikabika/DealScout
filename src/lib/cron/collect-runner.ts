@@ -19,8 +19,10 @@ type User = typeof users.$inferSelect
 type RunSearch = Search & {
   userEmail: string
   userPlan: string
-  userScrapesUsed: number
-  userScrapesResetAt: Date | null
+  runsToday: number
+  runsTodayResetAt: Date | null
+  runsThisMonth: number
+  runsThisMonthResetAt: Date | null
   userAiCallsThisMonth: number
 }
 
@@ -28,6 +30,7 @@ export type CollectionResult = {
   inserted: number
   stats: LastRunStats | null
   providersRun: string[]
+  skipReason?: string
 }
 
 interface ApifyItem {
@@ -95,11 +98,6 @@ type PipelineListing = {
 }
 
 type ClassifiedListing = PipelineListing & { _classification: Classification }
-
-function firstOfNextMonth(): Date {
-  const now = new Date()
-  return new Date(now.getFullYear(), now.getMonth() + 1, 1)
-}
 
 async function runFacebookScraper(search: Search, maxItems: number): Promise<ApifyItem[] | null> {
   const provider = PROVIDERS.find((p) => p.id === 'facebook')
@@ -248,44 +246,64 @@ function buildInsertTitle(item: PipelineListing) {
   return `Car listing in ${item.location || 'your area'}`
 }
 
-async function incrementScrapeCount(search: RunSearch, userScrapeCounts: Map<string, number>) {
-  const db = getDb()
-  const current = userScrapeCounts.get(search.userId) ?? 0
-  await db
-    .update(users)
-    .set({ scrapesUsedThisMonth: sql`scrapes_used_this_month + 1` })
-    .where(eq(users.id, search.userId))
-  userScrapeCounts.set(search.userId, current + 1)
-}
-
 export async function runCollectionForSearch(search: Search, user: User): Promise<CollectionResult> {
   const db = getDb()
   const row: RunSearch = {
     ...search,
     userEmail: user.email,
     userPlan: user.plan,
-    userScrapesUsed: user.scrapesUsedThisMonth,
-    userScrapesResetAt: user.scrapesResetAt,
+    runsToday: user.runsToday,
+    runsTodayResetAt: user.runsTodayResetAt,
+    runsThisMonth: user.runsThisMonth,
+    runsThisMonthResetAt: user.runsThisMonthResetAt,
     userAiCallsThisMonth: user.aiCallsThisMonth,
   }
 
   let totalNewListings = 0
   let lastStats: LastRunStats | null = null
   const providersRun: string[] = []
-  const userScrapeCounts = new Map<string, number>()
 
   const plan = getPlan(row.userPlan ?? 'free')
+
+  // ── Dual run limit enforcement ─────────────────────────────
   const now = new Date()
-  const resetAt = row.userScrapesResetAt
-  if (!resetAt || resetAt <= now) {
-    await db
-      .update(users)
-      .set({ scrapesUsedThisMonth: 0, scrapesResetAt: firstOfNextMonth() })
+
+  // Reset daily counter if it's a new UTC day
+  const todayUTC = new Date(Date.UTC(
+    now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()
+  ))
+  if (!row.runsTodayResetAt || new Date(row.runsTodayResetAt) < todayUTC) {
+    await db.update(users)
+      .set({ runsToday: 0, runsTodayResetAt: todayUTC })
       .where(eq(users.id, row.userId))
-    userScrapeCounts.set(row.userId, 0)
-  } else {
-    userScrapeCounts.set(row.userId, row.userScrapesUsed ?? 0)
+    row.runsToday = 0
   }
+
+  // Reset monthly counter if it's a new month
+  const firstOfMonth = new Date(Date.UTC(
+    now.getUTCFullYear(), now.getUTCMonth(), 1
+  ))
+  if (!row.runsThisMonthResetAt || new Date(row.runsThisMonthResetAt) < firstOfMonth) {
+    await db.update(users)
+      .set({ runsThisMonth: 0, runsThisMonthResetAt: firstOfMonth })
+      .where(eq(users.id, row.userId))
+    row.runsThisMonth = 0
+  }
+
+  // Check daily limit
+  if ((row.runsToday ?? 0) >= plan.maxRunsPerDay) {
+    console.log(`[QUOTA] Daily limit hit — ${row.userEmail}: ${row.runsToday}/${plan.maxRunsPerDay} runs today`)
+    return { inserted: 0, stats: null, providersRun: [], skipReason: 'daily_limit' }
+  }
+
+  // Check monthly limit
+  if ((row.runsThisMonth ?? 0) >= plan.maxRunsPerMonth) {
+    console.log(`[QUOTA] Monthly limit hit — ${row.userEmail}: ${row.runsThisMonth}/${plan.maxRunsPerMonth} runs this month`)
+    return { inserted: 0, stats: null, providersRun: [], skipReason: 'monthly_limit' }
+  }
+
+  console.log(`[QUOTA] OK — ${row.userEmail}: today ${row.runsToday ?? 0}/${plan.maxRunsPerDay}, month ${row.runsThisMonth ?? 0}/${plan.maxRunsPerMonth}`)
+  // ─────────────────────────────────────────────────────────────
 
   const searchProviders = (row.providers as string[] | null) ?? ['facebook']
   const providersToRun = searchProviders.filter((providerId) => {
@@ -305,19 +323,12 @@ export async function runCollectionForSearch(search: Search, user: User): Promis
   let maxItemsRequested = 0
 
   for (const providerId of providersToRun) {
-    const currentScrapes = userScrapeCounts.get(row.userId) ?? 0
-    if (currentScrapes >= plan.maxScrapesPerMonth) {
-      console.log(`[CRON] User ${row.userId} hit monthly scrape limit (${plan.maxScrapesPerMonth}) — skipping remaining providers`)
-      break
-    }
-
     try {
       if (providerId === 'facebook') {
         const items = await runFacebookScraper(row, maxItems)
         if (!items) continue
         rawProviderListings.push(...items.map((listing) => ({ listing, provider: 'facebook' as const })))
         maxItemsRequested += maxItems
-        await incrementScrapeCount(row, userScrapeCounts)
         if (!providersRun.includes(providerId)) providersRun.push(providerId)
       }
 
@@ -335,7 +346,6 @@ export async function runCollectionForSearch(search: Search, user: User): Promis
         }, { maxItems: 15 })
         rawProviderListings.push(...items.map((listing) => ({ listing, provider: 'craigslist' as const })))
         maxItemsRequested += 30
-        await incrementScrapeCount(row, userScrapeCounts)
         if (!providersRun.includes(providerId)) providersRun.push(providerId)
       }
 
@@ -343,6 +353,8 @@ export async function runCollectionForSearch(search: Search, user: User): Promis
         const items = await runCarsDotComScraper({
           city: row.city,
           state: row.state,
+          zipCode: row.zipCode ?? null,
+          radiusMiles: row.radiusMiles ?? 50,
           minPrice: row.minPrice,
           maxPrice: row.maxPrice,
           minYear: row.minYear,
@@ -353,7 +365,6 @@ export async function runCollectionForSearch(search: Search, user: User): Promis
         }, { maxItems: 30 })
         rawProviderListings.push(...items.map((listing) => ({ listing, provider: 'carsdotcom' as const })))
         maxItemsRequested += 30
-        await incrementScrapeCount(row, userScrapeCounts)
         if (!providersRun.includes(providerId)) providersRun.push(providerId)
         console.log('[CARSDOTCOM] Added', items.length, 'listings to pipeline')
       }
@@ -404,15 +415,21 @@ export async function runCollectionForSearch(search: Search, user: User): Promis
   const priced = raw.filter((item) => item.price >= minP && item.price <= maxP)
   console.log('[FILTER] After strict price filter:', priced.length)
 
-  const cityNeedle = (row.city || '').toLowerCase().replace(/\s+/g, '')
-  const stateNeedle = (row.state || '').toLowerCase()
   const located = priced.filter((item) => {
+    // Cars.com: skip location filter — the search URL already uses ZIP + radius
+    if (item.provider === 'carsdotcom') return true
+
+    // Facebook/Craigslist: private sellers, match city or state
     const loc = (item.location || '').toLowerCase()
     if (!loc) return false
-    const compactLoc = loc.replace(/\s+/g, '')
-    return compactLoc.includes(cityNeedle) || loc.includes(stateNeedle)
+    const cityNeedle = (row.city || '').toLowerCase().replace(/\s+/g, '')
+    const stateNeedle = (row.state || '').toLowerCase()
+    return loc.replace(/\s+/g, '').includes(cityNeedle) ||
+      loc.includes(stateNeedle) ||
+      loc.includes(` ${stateNeedle.toUpperCase()}`)
   })
-  console.log('[FILTER] After strict location filter:', located.length)
+  console.log('[FILTER] After strict location filter:', located.length,
+    `(${priced.length - located.length} dropped — providers: ${[...new Set(priced.filter((i) => !located.includes(i)).map((i) => i.provider))].join(', ')})`)
 
   const junkList = [
     'parts', 'wheels only', 'tires only', 'engine only', 'transmission only',
@@ -551,64 +568,57 @@ export async function runCollectionForSearch(search: Search, user: User): Promis
   })
   console.log(`[CLASSIFY] Kept ${cars.length}/${classified.length} as cars`)
 
-  const enableScoring =
-    (plan.id === 'pro' || plan.id === 'dealer') &&
-    (plan.maxAiCallsPerMonth ?? 0) > 0 &&
-    cars.length > 0
+  const enableScoring = plan.aiScoring && cars.length > 0
 
-  const currentAiCalls = row.userAiCallsThisMonth ?? 0
   let scoredCars: typeof cars = cars
 
   if (enableScoring) {
-    const remainingAiCalls = (plan.maxAiCallsPerMonth ?? 0) - currentAiCalls
-    if (remainingAiCalls <= 0) {
-      console.warn(
-        `[SCORER] User ${row.userEmail} hit AI quota` +
-        ` (${currentAiCalls}/${plan.maxAiCallsPerMonth}) — scoring skipped`,
-      )
-    } else {
-      const toScore = cars.slice(0, remainingAiCalls)
-      console.log(`[SCORER] Running for ${plan.name} user on ${toScore.length} listings`)
+    // Select model based on plan — Pro uses Haiku, Dealer uses Sonnet 4
+    const scorerModelId = plan.aiModel === 'sonnet'
+      ? (process.env.BEDROCK_SCORER_MODEL_ID || process.env.BEDROCK_MODEL_ID || 'us.anthropic.claude-sonnet-4-20250514-v1:0')
+      : 'us.anthropic.claude-haiku-4-5-20251001-v1:0'
 
-      const scoringResults = await Promise.all(
-        toScore.map(async (item) => {
-          const score = await scoreDeal({
-            imageUrl: item.image ?? null,
-            title: item.title ?? '',
-            description: item.description ?? null,
-            price: item.price,
-            year: item.year ?? null,
-            make: item.make ?? null,
-            model: item.model ?? null,
-            mileage: item.mileage ?? null,
-            location: item.location,
-          })
-          if (!score) return item
-          return {
-            ...item,
-            dealScore: score.dealScore,
-            estimatedValue: score.estimatedValue,
-            savings: score.savings,
-            conditionRating: score.conditionRating,
-            conditionNotes: score.conditionNotes,
-            redFlags: score.redFlags,
-            aiSummary: score.summary,
-            aiScoredAt: new Date(),
-          }
-        }),
-      )
+    console.log(`[SCORER] Using model: ${scorerModelId} for ${plan.name} plan`)
+    console.log(`[SCORER] Running for ${plan.name} user on ${cars.length} listings`)
 
-      scoredCars = [...scoringResults, ...cars.slice(remainingAiCalls)]
+    const scoringResults = await Promise.all(
+      cars.map(async (item) => {
+        const score = await scoreDeal({
+          imageUrl: item.image ?? null,
+          title: item.title ?? '',
+          description: item.description ?? null,
+          price: item.price,
+          year: item.year ?? null,
+          make: item.make ?? null,
+          model: item.model ?? null,
+          mileage: item.mileage ?? null,
+          location: item.location,
+        }, scorerModelId)
+        if (!score) return item
+        return {
+          ...item,
+          dealScore: score.dealScore,
+          estimatedValue: score.estimatedValue,
+          savings: score.savings,
+          conditionRating: score.conditionRating,
+          conditionNotes: score.conditionNotes,
+          redFlags: score.redFlags,
+          aiSummary: score.summary,
+          aiScoredAt: new Date(),
+        }
+      }),
+    )
 
-      const scoredCount = scoringResults.filter((item) => item.dealScore != null).length
-      console.log(`[SCORER] Scored ${scoredCount}/${toScore.length} listings`)
+    scoredCars = scoringResults
 
-      if (scoredCount > 0) {
-        await db
-          .update(users)
-          .set({ aiCallsThisMonth: sql`ai_calls_this_month + ${scoredCount}` })
-          .where(eq(users.id, row.userId))
-      }
+    const scoredCount = scoringResults.filter((item) => item.dealScore != null).length
+    console.log(`[SCORER] Scored ${scoredCount}/${cars.length} listings`)
+
+    if (scoredCount > 0) {
+      await db
+        .update(users)
+        .set({ aiCallsThisMonth: sql`ai_calls_this_month + ${scoredCount}` })
+        .where(eq(users.id, row.userId))
     }
   } else {
     console.log(`[SCORER] Skipping — ${plan.name} plan does not include deal scoring`)
@@ -676,6 +686,15 @@ export async function runCollectionForSearch(search: Search, user: User): Promis
     }
     totalNewListings += inserted.length
   }
+
+  // Increment run counters after successful completion
+  await db.update(users)
+    .set({
+      runsToday: sql`coalesce(${users.runsToday}, 0) + 1`,
+      runsThisMonth: sql`coalesce(${users.runsThisMonth}, 0) + 1`,
+    })
+    .where(eq(users.id, row.userId))
+  console.log(`[QUOTA] Incremented counters for ${row.userEmail}`)
 
   return { inserted: totalNewListings, stats: lastStats, providersRun }
 }

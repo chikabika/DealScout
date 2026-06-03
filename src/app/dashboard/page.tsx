@@ -723,24 +723,15 @@ export default async function DashboardPage() {
               max={plan.maxSearches}
             />
             <ProgressBar
-              label="Scrapes this month"
-              current={userRow.scrapesUsedThisMonth}
-              max={plan.maxScrapesPerMonth}
+              label="Runs today"
+              current={userRow.runsToday}
+              max={plan.maxRunsPerDay}
             />
-            {plan.maxAiCallsPerMonth > 0 ? (
-              <ProgressBar
-                label="AI calls this month"
-                current={userRow.aiCallsThisMonth}
-                max={plan.maxAiCallsPerMonth}
-              />
-            ) : (
-              <ProgressBar
-                label="AI calls this month"
-                current={0}
-                max={0}
-                locked
-              />
-            )}
+            <ProgressBar
+              label="Runs this month"
+              current={userRow.runsThisMonth}
+              max={plan.maxRunsPerMonth}
+            />
           </div>
         </div>
 

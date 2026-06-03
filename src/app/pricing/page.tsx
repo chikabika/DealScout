@@ -93,16 +93,20 @@ const FAQ = [
     a: "Searches over your new plan's limit are paused, not deleted. Upgrade again to resume them.",
   },
   {
-    q: 'Do you charge per scrape?',
-    a: 'No. Scrapes are included in your monthly plan — no surprise usage bills.',
+    q: "What does 'runs' mean?",
+    a: "A run is one scan of a marketplace for a search. Each search runs automatically on your plan's schedule.",
+  },
+  {
+    q: 'What happens when I hit the daily limit?',
+    a: 'Your searches pause for the rest of the day and resume automatically at midnight UTC.',
   },
   {
     q: 'Is there a refund policy?',
     a: '14-day money-back guarantee on all paid plans. No questions asked.',
   },
   {
-    q: 'Can I add more searches without upgrading?',
-    a: 'Upgrade to Pro for 15 searches or Dealer for 50. The Free plan includes 3 searches permanently.',
+    q: 'Why is the free plan limited to 3 searches?',
+    a: "3 searches is enough to prove DealScout's value. When you're ready for more, upgrade to Pro.",
   },
 ]
 

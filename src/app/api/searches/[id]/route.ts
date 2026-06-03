@@ -46,7 +46,7 @@ export async function PATCH(
       .limit(1)
     const plan = getPlan(user?.plan ?? 'free')
 
-    if (!(plan.allowedFrequencies as readonly number[]).includes(payload.frequencyMinutes)) {
+    if (payload.frequencyMinutes < plan.pollingMinutes) {
       return NextResponse.json({ error: 'INVALID_FREQUENCY' }, { status: 403 })
     }
 

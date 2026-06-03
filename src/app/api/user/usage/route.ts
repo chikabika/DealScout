@@ -16,8 +16,10 @@ export async function GET() {
   const [user] = await db
     .select({
       plan: users.plan,
-      scrapesUsedThisMonth: users.scrapesUsedThisMonth,
-      scrapesResetAt: users.scrapesResetAt,
+      runsToday: users.runsToday,
+      runsTodayResetAt: users.runsTodayResetAt,
+      runsThisMonth: users.runsThisMonth,
+      runsThisMonthResetAt: users.runsThisMonthResetAt,
     })
     .from(users)
     .where(eq(users.id, session.user.id))
@@ -30,29 +32,30 @@ export async function GET() {
 
   const plan = getPlan(user?.plan ?? 'free')
 
-  // Compute days until scrape counter resets (first of next calendar month)
-  const now = new Date()
-  const resetAt =
-    user?.scrapesResetAt && user.scrapesResetAt > now
-      ? user.scrapesResetAt
-      : new Date(now.getFullYear(), now.getMonth() + 1, 1)
-  const daysUntilReset = Math.max(
-    1,
-    Math.ceil((resetAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)),
-  )
-
   return NextResponse.json({
     plan: {
       id: plan.id,
       name: plan.name,
+      price: plan.price,
       maxSearches: plan.maxSearches,
-      maxScrapesPerMonth: plan.maxScrapesPerMonth,
       allowedProviders: plan.allowedProviders,
     },
     usage: {
-      searches: searchCount,
-      scrapes: user?.scrapesUsedThisMonth ?? 0,
-      daysUntilReset,
+      searches: {
+        used: searchCount,
+        max: plan.maxSearches,
+        isLifetime: true,
+      },
+      runsToday: {
+        used: user?.runsToday ?? 0,
+        max: plan.maxRunsPerDay,
+        resetsAt: 'midnight UTC',
+      },
+      runsThisMonth: {
+        used: user?.runsThisMonth ?? 0,
+        max: plan.maxRunsPerMonth,
+        resetsAt: 'first of month',
+      },
     },
   })
 }

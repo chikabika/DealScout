@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useForm, Controller, type Resolver } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Clock, Lock } from 'lucide-react'
+import { Clock, Lock, MapPin } from 'lucide-react'
 import { PROVIDERS } from '@/lib/providers'
 import { PLANS, type PlanId } from '@/lib/plans'
 
@@ -62,6 +62,8 @@ const formSchema = z
     model: z.string().optional(),
     keywords: z.string().optional(),
     blacklist: z.string().optional(),
+    zipCode: z.string().regex(/^\d{5}$/, 'ZIP must be 5 digits').optional().or(z.literal('')).transform((v) => v || null),
+    radiusMiles: z.number().int().min(10).max(500).default(50),
     frequencyMinutes: z.number().int().default(240),
   })
   .refine(
@@ -114,18 +116,17 @@ function selectClass(hasError?: boolean) {
   ].join(' ')
 }
 
-// ─── Frequency label map ──────────────────────────────────────────────────────
+// ─── Frequency options — locked based on plan minimum ────────────────────────
 
-const FREQ_OPTIONS: { value: number; label: string; locked?: boolean }[] = [
-  { value: 15,   label: 'Every 15 minutes', locked: true },
-  { value: 30,   label: 'Every 30 minutes', locked: true },
-  { value: 60,   label: 'Every hour',        locked: true },
-  { value: 120,  label: 'Every 2 hours',     locked: true },
-  { value: 240,  label: 'Every 4 hours' },
-  { value: 360,  label: 'Every 6 hours' },
-  { value: 720,  label: 'Every 12 hours' },
-  { value: 1440, label: 'Once a day' },
+const FREQ_OPTIONS = [
+  { value: 120,  label: 'Every 2 hours',  minPlan: 'dealer' },
+  { value: 240,  label: 'Every 4 hours',  minPlan: 'pro' },
+  { value: 360,  label: 'Every 6 hours',  minPlan: 'pro' },
+  { value: 720,  label: 'Every 12 hours', minPlan: 'free' },
+  { value: 1440, label: 'Once a day',     minPlan: 'free' },
 ]
+
+const planOrder = ['free', 'pro', 'dealer']
 
 // ─── Main form ────────────────────────────────────────────────────────────────
 
@@ -151,7 +152,9 @@ export function SearchForm({
     defaultValues: {
       providers: ['facebook'],
       maxPrice: 10000,
-      frequencyMinutes: 240,
+      frequencyMinutes: userPlan.pollingMinutes,
+      zipCode: '',
+      radiusMiles: 50,
     },
   })
 
@@ -347,11 +350,14 @@ export function SearchForm({
                   {...register('frequencyMinutes', { valueAsNumber: true })}
                   className="w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 >
-                  {FREQ_OPTIONS.map(({ value, label, locked }) => (
-                    <option key={value} value={value} disabled={locked}>
-                      {label}{locked ? ' 🔒' : ''}
-                    </option>
-                  ))}
+                  {FREQ_OPTIONS.map((opt) => {
+                    const locked = planOrder.indexOf(userPlan.id) < planOrder.indexOf(opt.minPlan)
+                    return (
+                      <option key={opt.value} value={opt.value} disabled={locked}>
+                        {opt.label}{locked ? ' 🔒' : ''}
+                      </option>
+                    )
+                  })}
                 </select>
                 <FieldError message={errors.frequencyMinutes?.message} />
                 <p className="mt-1.5 text-xs text-zinc-500">
@@ -390,7 +396,44 @@ export function SearchForm({
                 <FieldError message={errors.state?.message} />
               </div>
             </div>
-            <p className="mt-3 text-xs text-zinc-600">We&apos;ll search this city and surrounding area</p>
+
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium mb-1.5 text-zinc-300">
+                  ZIP Code
+                  <span className="text-zinc-500 font-normal ml-1">(optional)</span>
+                </label>
+                <input
+                  {...register('zipCode')}
+                  placeholder="90001"
+                  maxLength={5}
+                  className={inputClass(!!errors.zipCode)}
+                />
+                <p className="text-xs text-zinc-500 mt-1">Used for Cars.com dealer search radius</p>
+                <FieldError message={errors.zipCode?.message} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5 text-zinc-300">
+                  Search radius
+                </label>
+                <select
+                  {...register('radiusMiles', { valueAsNumber: true })}
+                  className={selectClass()}
+                >
+                  <option value={10}>10 miles</option>
+                  <option value={20}>20 miles</option>
+                  <option value={30}>30 miles</option>
+                  <option value={40}>40 miles</option>
+                  <option value={50}>50 miles</option>
+                  <option value={75}>75 miles</option>
+                  <option value={100}>100 miles</option>
+                  <option value={150}>150 miles</option>
+                  <option value={200}>200 miles</option>
+                  <option value={500}>500 miles (nationwide)</option>
+                </select>
+                <p className="text-xs text-zinc-500 mt-1">Applies to Cars.com dealer results</p>
+              </div>
+            </div>
           </div>
 
           {/* ── Section 3: Price & Vehicle ── */}
@@ -539,6 +582,12 @@ export function SearchForm({
                   <span className="text-zinc-600">Looking in: </span>
                   <span className="text-zinc-200">{[values.city, values.state].filter(Boolean).join(', ')}</span>
                 </p>
+              )}
+              {values.zipCode && (
+                <div className="flex items-center gap-1.5 text-sm text-zinc-400">
+                  <MapPin className="h-4 w-4 text-emerald-400" />
+                  {values.zipCode} · {values.radiusMiles} mile radius
+                </div>
               )}
               {values.maxPrice != null && (
                 <p className="text-sm text-zinc-400">

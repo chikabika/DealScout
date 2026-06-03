@@ -20,6 +20,8 @@ const createSearchSchema = z.object({
   model: z.string().optional(),
   keywords: z.string().optional(),
   blacklist: z.string().optional(),
+  zipCode: z.string().regex(/^\d{5}$/).nullable().optional(),
+  radiusMiles: z.number().int().min(10).max(500).default(50),
   pollingFrequency: z.enum(['hourly', '30min', '15min']).default('hourly'),
   frequencyMinutes: z.number().int().positive().default(240),
 })
@@ -76,7 +78,7 @@ export async function POST(req: Request) {
 
   const { data } = result
 
-  if (!(plan.allowedFrequencies as readonly number[]).includes(data.frequencyMinutes)) {
+  if (data.frequencyMinutes < plan.pollingMinutes) {
     return NextResponse.json(
       {
         error: 'INVALID_FREQUENCY',
@@ -116,6 +118,8 @@ export async function POST(req: Request) {
     model: data.model ?? null,
     keywords: data.keywords ?? null,
     blacklist: data.blacklist ?? null,
+    zipCode: data.zipCode ?? null,
+    radiusMiles: data.radiusMiles ?? 50,
     pollingFrequency: data.pollingFrequency,
     frequencyMinutes: data.frequencyMinutes,
     nextRunAt: firstRunAt,
