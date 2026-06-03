@@ -6,9 +6,7 @@ import { auth } from '@/lib/auth'
 import { getDb } from '@/lib/db'
 import { searches, users } from '@/lib/schema'
 import { getPlan, PLANS } from '@/lib/plans'
-import { getPaddlePriceIdForPlan } from '@/lib/paddle'
-import { ManagePaddleButton } from './ManagePaddleButton'
-import { PaddleCheckoutButton } from './PaddleCheckoutButton'
+import { CheckoutButton, ManageSubscriptionButton } from './CheckoutButton'
 
 // ─── Progress bar ─────────────────────────────────────────────────────────────
 
@@ -55,18 +53,11 @@ function UsageBar({
 function CompactPlanCard({
   plan,
   isCurrent,
-  userId,
-  email,
-  paddleCustomerId,
 }: {
   plan: (typeof PLANS)[keyof typeof PLANS]
   isCurrent: boolean
-  userId: string
-  email: string
-  paddleCustomerId?: string | null
 }) {
   const isPopular = 'popular' in plan && plan.popular
-  const paddlePriceId = getPaddlePriceIdForPlan(plan.id)
 
   return (
     <div
@@ -118,16 +109,12 @@ function CompactPlanCard({
 
       {!isCurrent && plan.id !== 'free' && (
         <div className="mt-5">
-          <PaddleCheckoutButton
+          <CheckoutButton
             planId={plan.id}
-            priceId={paddlePriceId}
-            userId={userId}
-            email={email}
-            customerId={paddleCustomerId}
             className="block w-full rounded-lg bg-emerald-600 py-2 text-center text-xs font-semibold text-white hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60 transition-colors"
           >
             Upgrade to {plan.name}
-          </PaddleCheckoutButton>
+          </CheckoutButton>
         </div>
       )}
     </div>
@@ -143,7 +130,6 @@ export default async function BillingPage() {
   }
 
   const userId = session.user.id
-  const sessionEmail = session.user.email ?? ''
   const db = getDb()
 
   const [user] = await db
@@ -154,9 +140,7 @@ export default async function BillingPage() {
       plan: users.plan,
       runsToday: users.runsToday,
       runsThisMonth: users.runsThisMonth,
-      paddleCustomerId: users.paddleCustomerId,
-      paddleSubscriptionId: users.paddleSubscriptionId,
-      paddleSubscriptionStatus: users.paddleSubscriptionStatus,
+      lsSubscriptionStatus: users.lsSubscriptionStatus,
     })
     .from(users)
     .where(eq(users.id, userId))
@@ -188,23 +172,19 @@ export default async function BillingPage() {
               <p className="mt-1 text-xl text-zinc-400">{plan.priceLabel}</p>
             </div>
             {plan.id === 'free' ? (
-              <PaddleCheckoutButton
+              <CheckoutButton
                 planId="pro"
-                priceId={getPaddlePriceIdForPlan('pro')}
-                userId={userId}
-                email={user?.email ?? sessionEmail}
-                customerId={user?.paddleCustomerId}
                 className="rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Upgrade to Pro
-              </PaddleCheckoutButton>
+              </CheckoutButton>
             ) : (
-              <ManagePaddleButton className="rounded-xl border border-white/10 px-6 py-2.5 text-sm font-medium text-zinc-300 transition-colors hover:border-white/20 hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-60" />
+              <ManageSubscriptionButton className="rounded-xl border border-white/10 px-6 py-2.5 text-sm font-medium text-zinc-300 transition-colors hover:border-white/20 hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-60" />
             )}
           </div>
-          {user?.paddleSubscriptionStatus && (
+          {user?.lsSubscriptionStatus && (
             <p className="mt-4 text-xs text-zinc-500">
-              Paddle subscription status: <span className="text-zinc-300">{user.paddleSubscriptionStatus}</span>
+              Subscription status: <span className="text-zinc-300">{user.lsSubscriptionStatus}</span>
             </p>
           )}
         </div>
@@ -255,9 +235,6 @@ export default async function BillingPage() {
                 key={p.id}
                 plan={p}
                 isCurrent={p.id === plan.id}
-                userId={userId}
-                email={user?.email ?? sessionEmail}
-                paddleCustomerId={user?.paddleCustomerId}
               />
             ))}
           </div>

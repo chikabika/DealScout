@@ -45,6 +45,10 @@ export const users = pgTable("users", {
   paddleSubscriptionId: text("paddle_subscription_id"),
   paddleSubscriptionStatus: text("paddle_subscription_status"),
   paddlePriceId: text("paddle_price_id"),
+  lsCustomerId: text("ls_customer_id"),
+  lsSubscriptionId: text("ls_subscription_id"),
+  lsSubscriptionStatus: text("ls_subscription_status"),
+  lsVariantId: text("ls_variant_id"),
   aiCallsThisMonth: integer("ai_calls_this_month").notNull().default(0),
   // Daily counter — resets at midnight UTC
   runsToday: integer('runs_today').notNull().default(0),
