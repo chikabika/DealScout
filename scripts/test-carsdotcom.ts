@@ -6,6 +6,8 @@ async function main() {
   const results = await runCarsDotComScraper({
     city: 'Los Angeles',
     state: 'CA',
+    zipCode: '90001',
+    radiusMiles: 50,
     minPrice: 5000,
     maxPrice: 30000,
     minYear: 2015,
