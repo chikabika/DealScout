@@ -570,15 +570,12 @@ export async function runCollectionForSearch(search: Search, user: User): Promis
   })
   console.log(`[CLASSIFY] Kept ${cars.length}/${classified.length} as cars`)
 
-  const enableScoring = plan.aiScoring && cars.length > 0
+  const enableScoring = (plan.id === 'pro' || plan.id === 'dealer') && cars.length > 0
 
   let scoredCars: typeof cars = cars
 
   if (enableScoring) {
-    // Select model based on plan — Pro uses Haiku, Dealer uses Sonnet 4
-    const scorerModelId = plan.aiModel === 'sonnet'
-      ? (process.env.BEDROCK_SCORER_MODEL_ID || process.env.BEDROCK_MODEL_ID || 'us.anthropic.claude-sonnet-4-20250514-v1:0')
-      : 'us.anthropic.claude-haiku-4-5-20251001-v1:0'
+    const scorerModelId = process.env.BEDROCK_MODEL_ID ?? 'us.anthropic.claude-sonnet-4-20250514-v1:0'
 
     console.log(`[SCORER] Using model: ${scorerModelId} for ${plan.name} plan`)
     console.log(`[SCORER] Running for ${plan.name} user on ${cars.length} listings`)
@@ -623,7 +620,7 @@ export async function runCollectionForSearch(search: Search, user: User): Promis
         .where(eq(users.id, row.userId))
     }
   } else {
-    console.log(`[SCORER] Skipping — ${plan.name} plan does not include deal scoring`)
+    console.log(`[SCORER] Skipping — Free plan does not include deal scoring`)
   }
 
   const toInsert: PipelineListing[] = scoredCars.map((item) => item)
