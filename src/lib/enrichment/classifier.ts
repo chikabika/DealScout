@@ -20,7 +20,7 @@ import { AnthropicBedrock } from '@anthropic-ai/bedrock-sdk'
 const AWS_ACCESS_KEY_ID     = process.env.AWS_ACCESS_KEY_ID
 const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY
 const AWS_REGION            = process.env.AWS_DEFAULT_REGION ?? process.env.AWS_REGION ?? 'us-east-1'
-const MODEL_ID              = process.env.BEDROCK_MODEL_ID ?? 'anthropic.claude-3-haiku-20240307-v1:0'
+const MODEL_ID              = process.env.BEDROCK_MODEL_ID ?? 'us.anthropic.claude-sonnet-4-20250514-v1:0'
 
 // Log at module-load so misconfig surfaces in the dev console, not silently at runtime
 if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY) {

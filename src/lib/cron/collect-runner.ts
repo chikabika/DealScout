@@ -570,7 +570,7 @@ export async function runCollectionForSearch(search: Search, user: User): Promis
   })
   console.log(`[CLASSIFY] Kept ${cars.length}/${classified.length} as cars`)
 
-  const enableScoring = (plan.id === 'pro' || plan.id === 'dealer') && cars.length > 0
+  const enableScoring = plan.aiScoring && cars.length > 0
 
   let scoredCars: typeof cars = cars
 

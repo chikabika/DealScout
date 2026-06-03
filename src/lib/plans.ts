@@ -16,6 +16,7 @@ export const PLANS = {
     emailMode: 'digest_daily' as const,
     aiScoring: false,
     aiFiltering: true,
+    aiModel: 'sonnet' as const,
     features: [
       '3 searches (lifetime)',
       'Facebook Marketplace',
