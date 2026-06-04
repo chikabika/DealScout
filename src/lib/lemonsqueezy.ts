@@ -39,10 +39,11 @@ export async function buildCheckoutUrl(input: {
   const storeId = process.env.LEMONSQUEEZY_STORE_ID!
 
   // Build a guaranteed-valid absolute URL.
-  // Priority: NEXTAUTH_URL → VERCEL_URL (preview) → VERCEL_PROJECT_PRODUCTION_URL
+  // Use NEXTAUTH_URL (must be set to your custom domain in Vercel env vars).
+  // VERCEL_URL is intentionally excluded — it's a per-deployment preview URL
+  // and would send users to the wrong host.
   const rawBase =
     process.env.NEXTAUTH_URL ??
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined) ??
     (process.env.VERCEL_PROJECT_PRODUCTION_URL
       ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
       : undefined)
