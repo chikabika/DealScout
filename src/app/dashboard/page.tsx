@@ -306,6 +306,25 @@ export default async function DashboardPage() {
           <UpgradeBanner />
         </Suspense>
 
+        {/* ── Free plan nudge ── */}
+        {plan.id === 'free' && (
+          <div className="flex items-center justify-between rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-5 py-3">
+            <div>
+              <p className="text-sm font-medium text-emerald-300">You're on the Free plan</p>
+              <p className="mt-0.5 text-xs text-zinc-400">
+                {plan.maxSearches - userSearches.length} searches remaining ·{' '}
+                Upgrade for instant alerts, Craigslist, and AI deal scoring
+              </p>
+            </div>
+            <a
+              href="/onboarding/plan"
+              className="shrink-0 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-500 transition-colors"
+            >
+              Upgrade →
+            </a>
+          </div>
+        )}
+
         {/* ── Zone 1: Header ── */}
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-zinc-100">
