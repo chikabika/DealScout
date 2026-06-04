@@ -2,6 +2,7 @@ import { and, desc, eq, gte, isNotNull, sql } from 'drizzle-orm'
 import { formatDistanceToNow } from 'date-fns'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { Suspense } from 'react'
 import {
   Activity,
   ChevronRight,
@@ -18,6 +19,7 @@ import { getDb } from '@/lib/db'
 import { listings, searches, users } from '@/lib/schema'
 import { getPlan, FREQUENCY_LABELS } from '@/lib/plans'
 import { RunNowButton } from './searches/RunNowButton'
+import { UpgradeBanner } from './UpgradeBanner'
 import type { LastRunStats } from '@/lib/schema'
 
 // ─── Small primitives ─────────────────────────────────────────────────────────
