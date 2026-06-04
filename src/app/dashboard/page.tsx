@@ -162,7 +162,12 @@ function activityResult(stats: LastRunStats | null): {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ upgraded?: string }>
+}) {
+  const { upgraded } = await searchParams
   const session = await auth()
   if (!session?.user?.id) redirect('/login?callbackUrl=/dashboard')
 
@@ -302,26 +307,15 @@ export default async function DashboardPage() {
     <section className="px-6 py-8 sm:px-10">
       <div className="max-w-5xl space-y-8">
 
-        <Suspense fallback={null}>
-          <UpgradeBanner />
-        </Suspense>
-
-        {/* ── Free plan nudge ── */}
-        {plan.id === 'free' && (
-          <div className="flex items-center justify-between rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-5 py-3">
-            <div>
-              <p className="text-sm font-medium text-emerald-300">You're on the Free plan</p>
-              <p className="mt-0.5 text-xs text-zinc-400">
-                {plan.maxSearches - userSearches.length} searches remaining ·{' '}
-                Upgrade for instant alerts, Craigslist, and AI deal scoring
-              </p>
-            </div>
-            <a
-              href="/onboarding/plan"
-              className="shrink-0 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-500 transition-colors"
-            >
-              Upgrade →
-            </a>
+        {/* ── Upgrade success banner ── */}
+        {upgraded === '1' && (
+          <div className="flex items-center gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300">
+            <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 shrink-0">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+            </svg>
+            <span>
+              <span className="font-semibold">Plan upgraded!</span> Your new limits are active immediately.
+            </span>
           </div>
         )}
 
