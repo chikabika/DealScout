@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
       userId: session.user.id,
       email: user?.email ?? session.user.email ?? '',
       planId,
-      redirectUrl: `${process.env.NEXTAUTH_URL}/dashboard/billing?checkout=success`,
+      redirectUrl: `${process.env.NEXTAUTH_URL}/dashboard?upgraded=1`,
     })
     return Response.json({ url })
   } catch (e) {

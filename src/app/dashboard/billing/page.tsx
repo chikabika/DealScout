@@ -123,7 +123,16 @@ function CompactPlanCard({
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default async function BillingPage() {
+export default async function BillingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ checkout?: string }>
+}) {
+  const params = await searchParams
+  if (params.checkout === 'success') {
+    redirect('/dashboard?upgraded=1')
+  }
+
   const session = await auth()
   if (!session?.user?.id) {
     redirect('/login?callbackUrl=/dashboard/billing')

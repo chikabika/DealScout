@@ -2,6 +2,7 @@ import { and, desc, eq, gte, isNotNull, sql } from 'drizzle-orm'
 import { formatDistanceToNow } from 'date-fns'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { Suspense } from 'react'
 import {
   Activity,
   ChevronRight,
@@ -18,6 +19,7 @@ import { getDb } from '@/lib/db'
 import { listings, searches, users } from '@/lib/schema'
 import { getPlan, FREQUENCY_LABELS } from '@/lib/plans'
 import { RunNowButton } from './searches/RunNowButton'
+import { UpgradeBanner } from './UpgradeBanner'
 import type { LastRunStats } from '@/lib/schema'
 
 // ─── Small primitives ─────────────────────────────────────────────────────────
@@ -299,6 +301,10 @@ export default async function DashboardPage() {
   return (
     <section className="px-6 py-8 sm:px-10">
       <div className="max-w-5xl space-y-8">
+
+        <Suspense fallback={null}>
+          <UpgradeBanner />
+        </Suspense>
 
         {/* ── Zone 1: Header ── */}
         <div>
