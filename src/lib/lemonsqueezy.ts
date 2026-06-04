@@ -33,26 +33,33 @@ export async function buildCheckoutUrl(input: {
   userId: string
   email: string
   planId: string
-  redirectUrl: string
+  successPath: string  // e.g. '/dashboard?upgraded=1'
 }): Promise<string> {
   setupLemonSqueezy()
   const storeId = process.env.LEMONSQUEEZY_STORE_ID!
 
-  // Resolve the base URL — NEXTAUTH_URL is often unset on Vercel; fall back to
-  // the canonical production URL that Vercel always provides.
-  const baseUrl =
-    process.env.NEXTAUTH_URL?.replace(/\/$/, '') ??
+  // Build a guaranteed-valid absolute URL.
+  // Priority: NEXTAUTH_URL → VERCEL_URL (preview) → VERCEL_PROJECT_PRODUCTION_URL
+  const rawBase =
+    process.env.NEXTAUTH_URL ??
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined) ??
     (process.env.VERCEL_PROJECT_PRODUCTION_URL
       ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-      : null)
+      : undefined)
 
-  if (!baseUrl) {
-    throw new Error('Unable to resolve app base URL. Set NEXTAUTH_URL.')
+  if (!rawBase) {
+    throw new Error('Unable to resolve app base URL. Set NEXTAUTH_URL in Vercel environment variables.')
   }
 
-  const redirectUrl = input.redirectUrl.startsWith('http')
-    ? input.redirectUrl
-    : `${baseUrl}${input.redirectUrl}`
+  const baseUrl = rawBase.replace(/\/$/, '')
+  const redirectUrl = `${baseUrl}${input.successPath}`
+
+  // Validate before sending — catch misconfigured env vars early
+  try { new URL(redirectUrl) } catch {
+    throw new Error(`Invalid redirect URL: "${redirectUrl}". Check NEXTAUTH_URL.`)
+  }
+
+  console.log('[LS] Creating checkout with redirectUrl:', redirectUrl)
 
   const { data, error } = await createCheckout(storeId, input.variantId, {
     checkoutOptions: {
