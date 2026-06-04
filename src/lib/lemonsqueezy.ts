@@ -38,6 +38,22 @@ export async function buildCheckoutUrl(input: {
   setupLemonSqueezy()
   const storeId = process.env.LEMONSQUEEZY_STORE_ID!
 
+  // Resolve the base URL — NEXTAUTH_URL is often unset on Vercel; fall back to
+  // the canonical production URL that Vercel always provides.
+  const baseUrl =
+    process.env.NEXTAUTH_URL?.replace(/\/$/, '') ??
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : null)
+
+  if (!baseUrl) {
+    throw new Error('Unable to resolve app base URL. Set NEXTAUTH_URL.')
+  }
+
+  const redirectUrl = input.redirectUrl.startsWith('http')
+    ? input.redirectUrl
+    : `${baseUrl}${input.redirectUrl}`
+
   const { data, error } = await createCheckout(storeId, input.variantId, {
     checkoutOptions: {
       embed: false,
@@ -52,7 +68,7 @@ export async function buildCheckoutUrl(input: {
       },
     },
     productOptions: {
-      redirectUrl: input.redirectUrl,
+      redirectUrl,
     },
     expiresAt: null,
     preview: false,
