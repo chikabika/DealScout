@@ -3,7 +3,7 @@ import crypto from 'crypto'
 import { eq, or } from 'drizzle-orm'
 import { getDb } from '@/lib/db'
 import { users } from '@/lib/schema'
-import { mapStatusToPlan } from '@/lib/lemonsqueezy'
+import { mapStatusToPlan, mapVariantToPlan } from '@/lib/lemonsqueezy'
 
 export const runtime = 'nodejs'
 
@@ -18,6 +18,41 @@ function verifySignature(rawBody: string, signature: string, secret: string): bo
   }
 }
 
+async function upsertUserPlan({
+  userId,
+  customerId,
+  subscriptionId,
+  status,
+  variantId,
+}: {
+  userId: string | null
+  customerId: string
+  subscriptionId: string
+  status: string
+  variantId: string
+}) {
+  const plan = mapStatusToPlan(status, variantId)
+  const db = getDb()
+
+  const where = userId
+    ? eq(users.id, userId)
+    : or(
+        eq(users.lsSubscriptionId, subscriptionId),
+        eq(users.lsCustomerId, customerId),
+      )
+
+  const result = await db.update(users).set({
+    plan,
+    lsCustomerId: customerId,
+    lsSubscriptionId: subscriptionId,
+    lsSubscriptionStatus: status,
+    lsVariantId: variantId,
+  }).where(where)
+
+  console.log(`[LS WEBHOOK] upsertUserPlan — userId:${userId} variantId:${variantId} status:${status} → plan:${plan}`, result)
+  return plan
+}
+
 export async function POST(req: Request) {
   const secret = process.env.LEMONSQUEEZY_WEBHOOK_SECRET
   if (!secret) {
@@ -29,7 +64,7 @@ export async function POST(req: Request) {
   const rawBody = await req.text()
 
   if (!verifySignature(rawBody, signature, secret)) {
-    console.warn('[LS WEBHOOK] Invalid signature')
+    console.warn('[LS WEBHOOK] Invalid signature — check LEMONSQUEEZY_WEBHOOK_SECRET matches the secret in LS dashboard')
     return Response.json({ error: 'invalid signature' }, { status: 401 })
   }
 
@@ -38,7 +73,12 @@ export async function POST(req: Request) {
   const data = event.data?.attributes ?? {}
   const customData = event.meta?.custom_data ?? {}
 
-  console.log('[LS WEBHOOK] Event:', eventName)
+  const userId = typeof customData.userId === 'string' ? customData.userId : null
+  const customerId = String(data.customer_id ?? '')
+  const variantId = String(data.variant_id ?? data.first_order_item?.variant_id ?? '')
+
+  console.log(`[LS WEBHOOK] event:${eventName} userId:${userId} variantId:${variantId} customerId:${customerId}`)
+  console.log(`[LS WEBHOOK] PRO_VARIANT=${process.env.NEXT_PUBLIC_LEMONSQUEEZY_PRO_VARIANT_ID} DEALER_VARIANT=${process.env.NEXT_PUBLIC_LEMONSQUEEZY_DEALER_VARIANT_ID}`)
 
   const subscriptionEvents = [
     'subscription_created',
@@ -51,30 +91,32 @@ export async function POST(req: Request) {
   ]
 
   if (subscriptionEvents.includes(eventName)) {
-    const userId = typeof customData.userId === 'string' ? customData.userId : null
-    const customerId = String(data.customer_id ?? '')
     const subscriptionId = String(event.data?.id ?? '')
     const status: string = data.status ?? ''
-    const variantId = String(data.variant_id ?? '')
-    const plan = mapStatusToPlan(status, variantId)
 
-    const db = getDb()
-    const where = userId
-      ? eq(users.id, userId)
-      : or(
-          eq(users.lsSubscriptionId, subscriptionId),
-          eq(users.lsCustomerId, customerId),
-        )
+    await upsertUserPlan({ userId, customerId, subscriptionId, status, variantId })
+  }
 
-    await db.update(users).set({
-      plan,
-      lsCustomerId: customerId,
-      lsSubscriptionId: subscriptionId,
-      lsSubscriptionStatus: status,
-      lsVariantId: variantId,
-    }).where(where)
+  // order_created fires immediately on payment — use as fast-path to set plan
+  // before the subscription webhook arrives (subscriptions can be delayed a few seconds)
+  if (eventName === 'order_created') {
+    const status = data.status === 'paid' ? 'active' : ''
+    const subscriptionId = String(data.subscription_id ?? event.data?.id ?? '')
+    const orderVariantId = String(
+      data.first_order_item?.variant_id ?? data.variant_id ?? variantId
+    )
+    const plan = mapVariantToPlan(orderVariantId)
 
-    console.log(`[LS WEBHOOK] Updated user — plan: ${plan}, status: ${status}`)
+    if (plan !== 'free' && userId) {
+      console.log(`[LS WEBHOOK] order_created fast-path — setting plan:${plan} for userId:${userId}`)
+      await upsertUserPlan({
+        userId,
+        customerId,
+        subscriptionId,
+        status,
+        variantId: orderVariantId,
+      })
+    }
   }
 
   return Response.json({ ok: true })
