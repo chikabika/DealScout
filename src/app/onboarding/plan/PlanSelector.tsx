@@ -17,7 +17,7 @@ const PLANS = [
     name: 'Free',
     price: '$0',
     period: 'forever',
-    description: 'Try DealScout and see deals before others.',
+    description: 'Try CarDealAlerts and see deals before others.',
     icon: Gift,
     iconColor: 'text-zinc-400',
     borderColor: 'border-zinc-700',

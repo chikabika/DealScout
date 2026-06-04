@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <!-- Peace sign circle -->
+  <circle cx="60" cy="60" r="54" fill="none" stroke="#7B2D8B" stroke-width="7"/>
+  <!-- Vertical line (top to bottom) -->
+  <line x1="60" y1="6" x2="60" y2="114" stroke="#7B2D8B" stroke-width="7"/>
+  <!-- Bottom-left spoke -->
+  <line x1="60" y1="60" x2="14" y2="95" stroke="#7B2D8B" stroke-width="7"/>
+  <!-- Bottom-right spoke -->
+  <line x1="60" y1="60" x2="106" y2="95" stroke="#7B2D8B" stroke-width="7"/>
+</svg>

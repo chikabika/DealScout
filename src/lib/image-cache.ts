@@ -50,7 +50,7 @@ const FACEBOOK_CRAWLER_UA =
 // Shared Cloudinary upload options (applied to both code paths)
 function uploadOptions(externalId: string) {
   return {
-    folder: 'dealscout/listings',
+    folder: 'cardealalerts/listings',
     // Idempotent: re-uploading the same externalId overwrites the existing asset
     public_id: safeId(externalId),
     overwrite: true,

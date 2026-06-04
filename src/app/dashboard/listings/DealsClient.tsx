@@ -60,8 +60,8 @@ type SortKey = 'newest' | 'cheapest' | 'dealScore'
 type ViewMode = 'grid' | 'list'
 type RecencyKey = '6h' | '24h' | '3d' | '7d' | 'all'
 
-const VIEW_MODE_KEY = 'dealscout:viewMode'
-const RECENCY_KEY = 'dealscout:recency'
+const VIEW_MODE_KEY = 'cardealalerts:viewMode'
+const RECENCY_KEY = 'cardealalerts:recency'
 const ONE_DAY_MS = 86_400_000
 
 const RECENCY_CUTOFFS: Record<RecencyKey, number> = {

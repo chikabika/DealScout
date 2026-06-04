@@ -62,7 +62,7 @@ async function imageToBase64(url: string): Promise<{
   try {
     const res = await fetch(url, {
       signal: AbortSignal.timeout(10_000),
-      headers: { 'User-Agent': 'Mozilla/5.0 DealScout/1.0' },
+      headers: { 'User-Agent': 'Mozilla/5.0 CarDealAlerts/1.0' },
     })
     if (!res.ok) return null
 

@@ -156,7 +156,7 @@ export default function RegisterPage() {
                 <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-emerald-400/30 bg-emerald-400/10">
                   <Search className="h-4 w-4 text-emerald-300" />
                 </span>
-                DealScout
+                CarDealAlerts
               </Link>
 
               <div className="max-w-xl">
@@ -167,7 +167,7 @@ export default function RegisterPage() {
                   Create your dashboard and start tracking real opportunities.
                 </h1>
                 <p className="mt-5 max-w-lg text-base leading-7 text-zinc-400">
-                  Build saved searches, monitor new listings, and let DealScout surface the strongest deals.
+                  Build saved searches, monitor new listings, and let CarDealAlerts surface the strongest deals.
                 </p>
               </div>
 
@@ -244,7 +244,7 @@ export default function RegisterPage() {
                     <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-emerald-400/30 bg-emerald-400/10">
                       <Search className="h-4 w-4 text-emerald-300" />
                     </span>
-                    DealScout
+                    CarDealAlerts
                   </Link>
                   <p className="mt-1.5 text-sm text-zinc-500">
                     Find car deals before everyone else.
@@ -262,14 +262,14 @@ export default function RegisterPage() {
                       <Search className="h-3.5 w-3.5 text-emerald-300" />
                     </span>
                     <span className="text-sm font-semibold tracking-tight text-zinc-300">
-                      DealScout
+                      CarDealAlerts
                     </span>
                   </div>
 
                   <div className="mb-7">
                     <p className="text-sm font-medium text-emerald-300">New account</p>
                     <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white">
-                      Join DealScout
+                      Join CarDealAlerts
                     </h1>
                     <p className="mt-2 text-sm leading-6 text-zinc-400">
                       Create an account once. We will sign you in and send you straight to the dashboard.
