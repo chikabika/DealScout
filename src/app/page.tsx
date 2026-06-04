@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PLANS } from "@/lib/plans";
 import {
   ArrowRight,
   Bell,
@@ -58,7 +59,8 @@ const liveProviders = [
   {
     name: "Facebook Marketplace",
     id: "facebook",
-    logoUrl: "https://www.google.com/s2/favicons?domain=facebook.com&sz=128",
+    logo: "📘",
+    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png",
     brandColor: "#1877F2",
     plans: "Free, Pro, Dealer",
     filters: "City, price, year, mileage, make, model, keywords",
@@ -66,15 +68,17 @@ const liveProviders = [
   {
     name: "Craigslist",
     id: "craigslist",
-    logoUrl: "https://www.google.com/s2/favicons?domain=craigslist.org&sz=128",
+    logo: "🪧",
+    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Craigslist_logo.svg/512px-Craigslist_logo.svg.png",
     brandColor: "#5C218A",
     plans: "Pro, Dealer only",
     filters: "City, state, price, year, mileage, make, model, keywords",
   },
-   {
+  {
     name: "Cars.com",
     id: "carsdotcom",
-    logoUrl: "https://www.google.com/s2/favicons?domain=cars.com&sz=128",
+    logo: "🏷️",
+    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Cars.com_logo_%282018%29.svg/512px-Cars.com_logo_%282018%29.svg.png",
     brandColor: "#D7372C",
     plans: "Dealer only",
     filters: "State, price, year, make, model",
@@ -85,17 +89,19 @@ const plannedProviders = [
   {
     name: "OfferUp",
     id: "offerup",
-    logoUrl: "https://www.google.com/s2/favicons?domain=offerup.com&sz=128",
+    logo: "🛒",
+    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/OfferUp_Logo.svg/512px-OfferUp_Logo.svg.png",
     brandColor: "#00B47C",
     filters: "City, state, price, keywords",
   },
   {
     name: "AutoTrader",
     id: "autotrader",
-    logoUrl: "https://www.google.com/s2/favicons?domain=autotrader.com&sz=128",
+    logo: "🚗",
+    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/AutoTrader_Logo.svg/512px-AutoTrader_Logo.svg.png",
     brandColor: "#FF6900",
     filters: "State, price, year, make, model",
-  }
+  },
 ];
 
 const providerPlanBreakdown = [
@@ -231,11 +237,13 @@ function ProductPreview() {
 
 function ProviderLogo({
   name,
+  logo,
   logoUrl,
   brandColor,
 }: {
   name: string;
-  logoUrl: string;
+  logo?: string;
+  logoUrl?: string;
   brandColor: string;
 }) {
   return (
@@ -244,16 +252,20 @@ function ProviderLogo({
       style={{ backgroundColor: brandColor }}
       aria-hidden="true"
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={logoUrl}
-        alt={`${name} logo`}
-        width={28}
-        height={28}
-        className="h-7 w-7 rounded-md object-contain"
-        loading="lazy"
-        referrerPolicy="no-referrer"
-      />
+      {logoUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={logoUrl}
+          alt={`${name} logo`}
+          width={28}
+          height={28}
+          className="h-7 w-7 rounded-md object-contain"
+          loading="lazy"
+          referrerPolicy="no-referrer"
+        />
+      ) : (
+        <span className="text-xl">{logo ?? name[0]}</span>
+      )}
     </span>
   );
 }
@@ -275,9 +287,9 @@ export default function Home() {
             <a href="#how-it-works" className="hover:text-white">
               How it works
             </a>
-            <Link href="/pricing" className="hover:text-white">
+            <a href="#pricing" className="hover:text-white">
               Pricing
-            </Link>
+            </a>
           </div>
           <div className="flex items-center gap-3">
             <Link
@@ -432,6 +444,7 @@ export default function Home() {
                         <div className="flex items-center gap-3">
                           <ProviderLogo
                             name={provider.name}
+                            logo={provider.logo}
                             logoUrl={provider.logoUrl}
                             brandColor={provider.brandColor}
                           />
@@ -466,24 +479,25 @@ export default function Home() {
                   {plannedProviders.map((provider) => (
                     <div
                       key={provider.id}
-                      className="grid gap-3 rounded-lg border border-white/8 bg-white/[0.02] p-4 sm:grid-cols-[1fr_1.4fr] sm:items-center"
+                      className="grid gap-3 rounded-lg border border-white/8 bg-white/[0.02] p-4 opacity-60 sm:grid-cols-[1fr_1.4fr] sm:items-center"
                     >
                       <div className="flex items-center gap-3">
                         <ProviderLogo
                           name={provider.name}
+                          logo={provider.logo}
                           logoUrl={provider.logoUrl}
                           brandColor={provider.brandColor}
                         />
                         <div>
-                          <p className="font-semibold text-zinc-200">{provider.name}</p>
-                          <p className="mt-1 font-mono text-xs text-zinc-600">
-                            {provider.id}
-                          </p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold text-zinc-200">{provider.name}</p>
+                            <span className="rounded-full bg-amber-400/15 px-2 py-0.5 text-[10px] font-semibold text-amber-300">
+                              Coming soon
+                            </span>
+                          </div>
+                          <p className="mt-1 text-xs text-zinc-500">{provider.filters}</p>
                         </div>
                       </div>
-                      <p className="text-sm leading-6 text-zinc-500">
-                        {provider.filters}
-                      </p>
                     </div>
                   ))}
                 </div>
@@ -516,6 +530,100 @@ export default function Home() {
                 <p className="pt-1 text-zinc-700">{step}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="pricing" className="border-t border-white/10 bg-zinc-950 py-20">
+        <div className="mx-auto max-w-7xl px-5 sm:px-6">
+          <div className="mb-12 text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-300">
+              Pricing
+            </p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+              Simple, transparent pricing
+            </h2>
+            <p className="mt-4 text-zinc-400">
+              Start free. Upgrade when you need more speed and sources.
+            </p>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-3">
+            {/* Free */}
+            <div className="relative flex flex-col rounded-2xl border border-zinc-800 bg-zinc-900 p-8">
+              <h3 className="text-xl font-bold text-white">{PLANS.free.name}</h3>
+              <div className="mt-3 flex items-baseline gap-1">
+                <span className="text-4xl font-bold text-white">Free</span>
+              </div>
+              <div className="my-6 border-t border-zinc-800" />
+              <ul className="flex-1 space-y-3">
+                {(PLANS.free.features as readonly string[]).map((f) => (
+                  <li key={f} className="flex items-start gap-3 text-sm text-zinc-300">
+                    <Check size={16} className="mt-0.5 shrink-0 text-emerald-500" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/register"
+                className="mt-8 block w-full rounded-xl border border-zinc-700 py-3 text-center text-sm font-semibold text-zinc-400 transition hover:border-zinc-600 hover:text-zinc-200"
+              >
+                Start free
+              </Link>
+            </div>
+
+            {/* Pro */}
+            <div className="relative flex flex-col rounded-2xl border-2 border-emerald-500 bg-zinc-900 p-8">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                <span className="rounded-full bg-emerald-500 px-4 py-1 text-xs font-semibold text-white">
+                  Most popular
+                </span>
+              </div>
+              <h3 className="text-xl font-bold text-white">{PLANS.pro.name}</h3>
+              <div className="mt-3 flex items-baseline gap-1">
+                <span className="text-4xl font-bold text-white">${PLANS.pro.price}</span>
+                <span className="text-sm text-zinc-400">/mo</span>
+              </div>
+              <div className="my-6 border-t border-zinc-800" />
+              <ul className="flex-1 space-y-3">
+                {(PLANS.pro.features as readonly string[]).map((f) => (
+                  <li key={f} className="flex items-start gap-3 text-sm text-zinc-300">
+                    <Check size={16} className="mt-0.5 shrink-0 text-emerald-500" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/register?plan=pro"
+                className="mt-8 block w-full rounded-xl bg-emerald-600 py-3 text-center text-sm font-semibold text-white transition hover:bg-emerald-500"
+              >
+                Upgrade to Pro
+              </Link>
+            </div>
+
+            {/* Dealer */}
+            <div className="relative flex flex-col rounded-2xl border border-zinc-800 bg-zinc-900 p-8">
+              <h3 className="text-xl font-bold text-white">{PLANS.dealer.name}</h3>
+              <div className="mt-3 flex items-baseline gap-1">
+                <span className="text-4xl font-bold text-white">${PLANS.dealer.price}</span>
+                <span className="text-sm text-zinc-400">/mo</span>
+              </div>
+              <div className="my-6 border-t border-zinc-800" />
+              <ul className="flex-1 space-y-3">
+                {(PLANS.dealer.features as readonly string[]).map((f) => (
+                  <li key={f} className="flex items-start gap-3 text-sm text-zinc-300">
+                    <Check size={16} className="mt-0.5 shrink-0 text-emerald-500" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/register?plan=dealer"
+                className="mt-8 block w-full rounded-xl border border-white/20 py-3 text-center text-sm font-semibold text-zinc-200 transition hover:border-white/40 hover:text-white"
+              >
+                Upgrade to Dealer
+              </Link>
+            </div>
           </div>
         </div>
       </section>

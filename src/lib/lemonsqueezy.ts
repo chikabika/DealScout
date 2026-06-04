@@ -46,11 +46,13 @@ export async function buildCheckoutUrl(input: {
     },
     checkoutData: {
       email: input.email,
-      redirectUrl: input.redirectUrl,
       custom: {
         userId: input.userId,
         planId: input.planId,
       },
+    },
+    productOptions: {
+      redirectUrl: input.redirectUrl,
     },
     expiresAt: null,
     preview: false,
