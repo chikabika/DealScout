@@ -361,7 +361,7 @@ export function SearchForm({
                 </select>
                 <FieldError message={errors.frequencyMinutes?.message} />
                 <p className="mt-1.5 text-xs text-zinc-500">
-                  How often DealScout checks your selected marketplaces for new listings.{' '}
+                  How often CarDealAlerts checks your selected marketplaces for new listings.{' '}
                   {userPlan.id === 'free' && (
                     <Link href="/pricing" className="text-emerald-400 hover:underline">
                       Upgrade for faster polling →

@@ -14,11 +14,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL ?? "https://dealscout.com",
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://www.cardealalerts.com",
   ),
   title: {
-    default: "DealScout | AI Car Deal Alerts",
-    template: "%s | DealScout",
+    default: "CarDealAlerts | AI Car Deal Alerts",
+    template: "%s | CarDealAlerts",
   },
   description:
     "Track local vehicle listings, score used car deals with AI, and get email alerts before the best cars disappear.",
@@ -31,17 +31,17 @@ export const metadata: Metadata = {
     "vehicle deal tracker",
   ],
   openGraph: {
-    title: "DealScout | AI Car Deal Alerts",
+    title: "CarDealAlerts | AI Car Deal Alerts",
     description:
       "Monitor Facebook Marketplace and Craigslist for underpriced cars with AI scoring and email alerts.",
     url: "/",
-    siteName: "DealScout",
+    siteName: "CarDealAlerts",
     locale: "en_US",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "DealScout | AI Car Deal Alerts",
+    title: "CarDealAlerts | AI Car Deal Alerts",
     description:
       "Find underpriced local vehicle listings faster with marketplace monitoring, AI scoring, and email alerts.",
   },

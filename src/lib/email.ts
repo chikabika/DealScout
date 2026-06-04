@@ -74,7 +74,7 @@ export async function sendDealAlert(
 <body style="background:#09090b;font-family:system-ui,sans-serif;margin:0;padding:24px;">
   <div style="max-width:600px;margin:0 auto;">
     <div style="margin-bottom:24px;">
-      <span style="font-size:20px;font-weight:700;color:#ffffff;">DealScout</span>
+      <span style="font-size:20px;font-weight:700;color:#ffffff;">CarDealAlerts</span>
     </div>
 
     <div style="background:#18181b;border-radius:12px;padding:24px;border:1px solid #27272a;">
@@ -101,7 +101,7 @@ export async function sendDealAlert(
     </div>
 
     <p style="margin-top:16px;color:#52525b;font-size:12px;text-align:center;">
-      You're receiving this because you have an active DealScout search.
+      You're receiving this because you have an active CarDealAlerts search.
     </p>
   </div>
 </body>
@@ -114,7 +114,7 @@ export async function sendDealAlert(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      sender: { name: 'DealScout', email: senderEmail },
+      sender: { name: 'CarDealAlerts', email: senderEmail },
       to: [{ email: toEmail }],
       subject: `🚗 ${count} new deal${count === 1 ? '' : 's'} found — ${searchName}`,
       htmlContent: html,
@@ -217,7 +217,7 @@ export async function sendDailyDigest(params: {
         <tr><td style="background:#18181b;border-radius:12px 12px 0 0;padding:24px 28px;border-bottom:1px solid #27272a;">
           <div style="display:flex;align-items:center;gap:10px;">
             <span style="font-size:24px;">🚗</span>
-            <span style="font-size:20px;font-weight:700;color:#fff;">DealScout</span>
+            <span style="font-size:20px;font-weight:700;color:#fff;">CarDealAlerts</span>
           </div>
           <div style="font-size:13px;color:#71717a;margin-top:4px;">Your daily car deal digest</div>
         </td></tr>
@@ -250,7 +250,7 @@ export async function sendDailyDigest(params: {
             Upgrade to Pro →
           </a>
           <p style="font-size:11px;color:#52525b;margin:20px 0 0;">
-            You're receiving this because you have an active DealScout Free account.<br />
+            You're receiving this because you have an active CarDealAlerts Free account.<br />
             <a href="${esc(params.appUrl)}/dashboard/settings" style="color:#52525b;">Manage notifications</a>
           </p>
         </td></tr>
@@ -269,7 +269,7 @@ export async function sendDailyDigest(params: {
       Accept: 'application/json',
     },
     body: JSON.stringify({
-      sender: { email: senderEmail, name: 'DealScout' },
+      sender: { email: senderEmail, name: 'CarDealAlerts' },
       to: [{ email: params.to, name: params.userName ?? undefined }],
       subject,
       htmlContent,

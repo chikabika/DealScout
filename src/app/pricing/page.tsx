@@ -106,7 +106,7 @@ const FAQ = [
   },
   {
     q: 'Why is the free plan limited to 3 searches?',
-    a: "3 searches is enough to prove DealScout's value. When you're ready for more, upgrade to Pro.",
+    a: "3 searches is enough to prove CarDealAlerts' value. When you're ready for more, upgrade to Pro.",
   },
 ]
 
@@ -119,7 +119,7 @@ export default function PricingPage() {
       <nav className="border-b border-white/5 px-6 py-4">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <Link href="/" className="text-xl font-bold text-white">
-            DealScout
+            CarDealAlerts
           </Link>
           <div className="flex items-center gap-4">
             <Link href="/login" className="text-sm text-zinc-400 hover:text-zinc-200">

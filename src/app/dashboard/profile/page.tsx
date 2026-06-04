@@ -100,7 +100,7 @@ export default async function ProfilePage() {
   const plan = getPlan(user.plan)
   const searchStats = searchStatsRows[0] ?? { total: 0, active: 0, paused: 0 }
   const listingStats = listingStatsRows[0] ?? { total: 0, scored: 0 }
-  const displayName = user.name?.trim() || session.user.name || 'DealScout user'
+  const displayName = user.name?.trim() || session.user.name || 'CarDealAlerts user'
   const initials = displayName
     .split(' ')
     .filter(Boolean)
