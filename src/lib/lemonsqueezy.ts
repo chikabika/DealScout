@@ -51,6 +51,9 @@ export async function buildCheckoutUrl(input: {
         planId: input.planId,
       },
     },
+    productOptions: {
+      redirectUrl: input.redirectUrl,
+    },
     expiresAt: null,
     preview: false,
     testMode: process.env.NODE_ENV !== 'production',
