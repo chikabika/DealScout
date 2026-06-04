@@ -1,7 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import type { PlanId } from '@/lib/plans'
+import { openOverlayCheckout } from '@/lib/lemonsqueezy-overlay'
 
 export function CheckoutButton({
   planId,
@@ -12,6 +14,7 @@ export function CheckoutButton({
   children: React.ReactNode
   className: string
 }) {
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -26,7 +29,9 @@ export function CheckoutButton({
       })
       const data = await res.json() as { url?: string; error?: string }
       if (!res.ok || !data.url) throw new Error(data.error ?? 'Checkout failed')
-      window.location.href = data.url
+      await openOverlayCheckout(data.url, () => {
+        router.push('/dashboard?upgraded=1')
+      })
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Unable to open checkout')
     } finally {

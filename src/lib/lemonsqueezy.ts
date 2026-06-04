@@ -40,7 +40,7 @@ export async function buildCheckoutUrl(input: {
 
   const { data, error } = await createCheckout(storeId, input.variantId, {
     checkoutOptions: {
-      embed: false,
+      embed: true,
       media: false,
       logo: true,
     },
