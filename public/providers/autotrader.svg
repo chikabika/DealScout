@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <!-- Outer ring -->
+  <circle cx="60" cy="60" r="58" fill="url(#ring)" stroke="#ccc" stroke-width="1"/>
+  <defs>
+    <radialGradient id="ring" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#f0f0f0"/>
+      <stop offset="100%" stop-color="#d0d0d0"/>
+    </radialGradient>
+  </defs>
+  <!-- Orange circle inner -->
+  <circle cx="60" cy="60" r="48" fill="url(#orange)"/>
+  <defs>
+    <radialGradient id="orange" cx="40%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#FFB347"/>
+      <stop offset="100%" stop-color="#FF6900"/>
+    </radialGradient>
+  </defs>
+  <!-- A shape: two legs + crossbar, white cutouts -->
+  <!-- Left leg -->
+  <polygon points="30,85 48,30 60,30 42,85" fill="white"/>
+  <!-- Right leg -->
+  <polygon points="90,85 72,30 60,30 78,85" fill="white"/>
+  <!-- Crossbar cutout (orange fills back) -->
+  <rect x="38" y="58" width="44" height="10" fill="url(#orange2)"/>
+  <defs>
+    <linearGradient id="orange2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FF6900"/>
+      <stop offset="100%" stop-color="#FF6900"/>
+    </linearGradient>
+  </defs>
+  <!-- Bottom cutout to make open A -->
+  <polygon points="46,85 74,85 72,72 48,72" fill="#d0d0d0"/>
+</svg>

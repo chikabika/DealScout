@@ -60,7 +60,7 @@ const liveProviders = [
     name: "Facebook Marketplace",
     id: "facebook",
     logo: "📘",
-    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png",
+    logoUrl: "/providers/facebook.svg",
     brandColor: "#1877F2",
     plans: "Free, Pro, Dealer",
     filters: "City, price, year, mileage, make, model, keywords",
@@ -69,7 +69,7 @@ const liveProviders = [
     name: "Craigslist",
     id: "craigslist",
     logo: "🪧",
-    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Craigslist_logo.svg/512px-Craigslist_logo.svg.png",
+    logoUrl: "/providers/craigslist.svg",
     brandColor: "#5C218A",
     plans: "Pro, Dealer only",
     filters: "City, state, price, year, mileage, make, model, keywords",
@@ -78,7 +78,7 @@ const liveProviders = [
     name: "Cars.com",
     id: "carsdotcom",
     logo: "🏷️",
-    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Cars.com_logo_%282018%29.svg/512px-Cars.com_logo_%282018%29.svg.png",
+    logoUrl: "/providers/carsdotcom.svg",
     brandColor: "#D7372C",
     plans: "Dealer only",
     filters: "State, price, year, make, model",
@@ -90,7 +90,7 @@ const plannedProviders = [
     name: "OfferUp",
     id: "offerup",
     logo: "🛒",
-    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/OfferUp_Logo.svg/512px-OfferUp_Logo.svg.png",
+    logoUrl: "/providers/offerup.svg",
     brandColor: "#00B47C",
     filters: "City, state, price, keywords",
   },
@@ -98,7 +98,7 @@ const plannedProviders = [
     name: "AutoTrader",
     id: "autotrader",
     logo: "🚗",
-    logoUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/AutoTrader_Logo.svg/512px-AutoTrader_Logo.svg.png",
+    logoUrl: "/providers/autotrader.svg",
     brandColor: "#FF6900",
     filters: "State, price, year, make, model",
   },
@@ -261,7 +261,6 @@ function ProviderLogo({
           height={28}
           className="h-7 w-7 rounded-md object-contain"
           loading="lazy"
-          referrerPolicy="no-referrer"
         />
       ) : (
         <span className="text-xl">{logo ?? name[0]}</span>
