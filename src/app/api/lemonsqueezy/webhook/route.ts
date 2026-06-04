@@ -20,12 +20,14 @@ function verifySignature(rawBody: string, signature: string, secret: string): bo
 
 async function upsertUserPlan({
   userId,
+  userEmail,
   customerId,
   subscriptionId,
   status,
   variantId,
 }: {
   userId: string | null
+  userEmail: string
   customerId: string
   subscriptionId: string
   status: string
@@ -34,8 +36,11 @@ async function upsertUserPlan({
   const plan = mapStatusToPlan(status, variantId)
   const db = getDb()
 
+  // Priority: userId from custom_data → email (always present) → ls IDs
   const where = userId
     ? eq(users.id, userId)
+    : userEmail
+    ? eq(users.email, userEmail)
     : or(
         eq(users.lsSubscriptionId, subscriptionId),
         eq(users.lsCustomerId, customerId),
@@ -49,7 +54,7 @@ async function upsertUserPlan({
     lsVariantId: variantId,
   }).where(where)
 
-  console.log(`[LS WEBHOOK] upsertUserPlan — userId:${userId} variantId:${variantId} status:${status} → plan:${plan}`, result)
+  console.log(`[LS WEBHOOK] upsertUserPlan — userId:${userId} email:${userEmail} variantId:${variantId} status:${status} → plan:${plan} rowCount:${result.rowCount}`)
   return plan
 }
 
@@ -74,10 +79,11 @@ export async function POST(req: Request) {
   const customData = event.meta?.custom_data ?? {}
 
   const userId = typeof customData.userId === 'string' ? customData.userId : null
+  const userEmail: string = data.user_email ?? ''
   const customerId = String(data.customer_id ?? '')
   const variantId = String(data.variant_id ?? data.first_order_item?.variant_id ?? '')
 
-  console.log(`[LS WEBHOOK] event:${eventName} userId:${userId} variantId:${variantId} customerId:${customerId}`)
+  console.log(`[LS WEBHOOK] event:${eventName} userId:${userId} email:${userEmail} variantId:${variantId}`)
   console.log(`[LS WEBHOOK] PRO_VARIANT=${process.env.NEXT_PUBLIC_LEMONSQUEEZY_PRO_VARIANT_ID} DEALER_VARIANT=${process.env.NEXT_PUBLIC_LEMONSQUEEZY_DEALER_VARIANT_ID}`)
 
   const subscriptionEvents = [
@@ -94,23 +100,25 @@ export async function POST(req: Request) {
     const subscriptionId = String(event.data?.id ?? '')
     const status: string = data.status ?? ''
 
-    await upsertUserPlan({ userId, customerId, subscriptionId, status, variantId })
+    await upsertUserPlan({ userId, userEmail, customerId, subscriptionId, status, variantId })
   }
 
   // order_created fires immediately on payment — use as fast-path to set plan
-  // before the subscription webhook arrives (subscriptions can be delayed a few seconds)
+  // before the subscription webhook arrives
   if (eventName === 'order_created') {
     const status = data.status === 'paid' ? 'active' : ''
     const subscriptionId = String(data.subscription_id ?? event.data?.id ?? '')
     const orderVariantId = String(
       data.first_order_item?.variant_id ?? data.variant_id ?? variantId
     )
+    const orderEmail: string = data.user_email ?? userEmail
     const plan = mapVariantToPlan(orderVariantId)
 
-    if (plan !== 'free' && userId) {
-      console.log(`[LS WEBHOOK] order_created fast-path — setting plan:${plan} for userId:${userId}`)
+    if (plan !== 'free') {
+      console.log(`[LS WEBHOOK] order_created fast-path — plan:${plan} email:${orderEmail}`)
       await upsertUserPlan({
         userId,
+        userEmail: orderEmail,
         customerId,
         subscriptionId,
         status,
