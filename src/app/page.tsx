@@ -343,7 +343,7 @@ export default function Home() {
         <div className="mx-auto grid max-w-7xl gap-6 px-5 py-8 sm:grid-cols-3 sm:px-6">
           {[
             ["Every 2h", "fastest Dealer plan polling"],
-            ["20", "saved searches on Dealer plan"],
+            ["15", "saved searches on Dealer plan"],
             ["AI", "market value and red flag analysis"],
           ].map(([stat, label]) => (
             <div key={label} className="py-2">
