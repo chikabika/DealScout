@@ -125,14 +125,14 @@ export default function TermsPage() {
           </Section>
 
           <Section title="9. Refund Policy">
-            <p>
-              Refunds and cancellations are governed by our{' '}
-              <a href="/refund">Refund &amp; Cancellation Policy</a>.
-              Because CarDealAlerts is a digital subscription service, payments are generally
-              non-refundable once a billing period has started, except where required by law
-              or approved under our Refund Policy.
-            </p>
-          </Section>
+  <p>
+    Refunds and cancellations are governed by our{' '}
+    <a href="/refund-policy">Refund &amp; Cancellation Policy</a>.
+    Because CarDealAlerts is a digital subscription service, payments are generally
+    non-refundable once a billing period has started, except where required by law
+    or approved under our Refund Policy.
+  </p>
+</Section>
 
           <Section title="10. Free Plans and Trials">
             <p>
