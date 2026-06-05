@@ -1,7 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 100">
-  <rect width="160" height="100" rx="10" fill="#6B2D8B"/>
-  <!-- Swoosh ellipse -->
-  <ellipse cx="80" cy="62" rx="68" ry="12" fill="none" stroke="white" stroke-width="3.5" stroke-dasharray="0"/>
-  <!-- cars.com text -->
-  <text x="80" y="52" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700" fill="white" text-anchor="middle" letter-spacing="-0.5">cars.com</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <!-- Purple background -->
+  <rect width="120" height="120" fill="#7B1FA2"/>
+  <!-- White oval -->
+  <ellipse cx="60" cy="60" rx="52" ry="32" fill="white"/>
+  <!-- Purple text -->
+  <text x="60" y="66" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" fill="#7B1FA2" text-anchor="middle" letter-spacing="-0.5">cars.com</text>
 </svg>
