@@ -1,208 +1,219 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { LegalNav, LegalFooter, Section, ContactCard } from '@/app/_legal/components'
 
 export const metadata: Metadata = {
   title: 'Terms of Service',
   description: 'Terms of Service for CarDealAlerts.',
+  alternates: { canonical: '/terms' },
 }
-
-const EFFECTIVE_DATE = 'June 5, 2026'
 
 export default function TermsPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
-      {/* Nav */}
-      <nav className="border-b border-white/10 px-6 py-4">
-        <div className="mx-auto flex max-w-4xl items-center justify-between">
-          <Link href="/" className="text-lg font-semibold text-white hover:text-emerald-300">
-            CarDealAlerts
-          </Link>
-          <Link href="/login" className="text-sm text-zinc-400 hover:text-zinc-200">
-            Log in
-          </Link>
+      <LegalNav />
+
+      <main className="mx-auto max-w-4xl px-6 py-16 pb-24">
+        <div className="mb-10">
+          <p className="text-xs font-semibold uppercase tracking-widest text-emerald-500">Legal</p>
+          <h1 className="mt-3 text-4xl font-bold tracking-tight text-white">Terms of Service</h1>
+          <p className="mt-3 text-sm text-zinc-500">Last updated: June 4, 2026</p>
         </div>
-      </nav>
 
-      <div className="mx-auto max-w-4xl px-6 py-16 pb-24">
-        <h1 className="text-3xl font-bold text-white">Terms of Service</h1>
-        <p className="mt-2 text-sm text-zinc-500">Effective date: {EFFECTIVE_DATE}</p>
+        <div className="space-y-10 text-zinc-300">
+          <div className="space-y-4 text-base leading-7">
+            <p>
+              Welcome to CarDealAlerts. These Terms of Service ("Terms") govern your access to and use of the CarDealAlerts website, software, alerts, subscriptions, and related services ("Service").
+            </p>
+            <p>
+              By using CarDealAlerts, you agree to these Terms. If you do not agree, please do not use the Service.
+            </p>
+          </div>
 
-        <div className="prose-legal mt-10 space-y-8 text-zinc-300">
+          <Section title="1. About CarDealAlerts">
+            <p>
+              CarDealAlerts is a software service that helps users discover potential used vehicle deals by monitoring public vehicle listings and sending alerts based on user-defined search criteria, market signals, and AI-assisted deal scoring.
+            </p>
+            <p>
+              CarDealAlerts does not sell vehicles, own vehicle inventory, broker vehicle sales, inspect vehicles, guarantee vehicle availability, or represent any seller, dealer, marketplace, or vehicle manufacturer.
+            </p>
+          </Section>
 
-          <section>
-            <h2 className="text-lg font-semibold text-white">1. Acceptance of Terms</h2>
-            <p className="mt-3 leading-7">
-              By accessing or using CarDealAlerts ("the Service", "we", "us", "our"), you agree to
-              be bound by these Terms of Service and all applicable laws. If you do not agree,
-              do not use the Service.
+          <Section title="2. Eligibility">
+            <p>
+              You must be at least 18 years old, or the age of legal majority in your country, to create an account or purchase a paid subscription.
             </p>
-          </section>
+            <p>
+              By using the Service, you confirm that the information you provide is accurate and that you have the legal authority to use the Service and purchase subscriptions.
+            </p>
+          </Section>
 
-          <section>
-            <h2 className="text-lg font-semibold text-white">2. Description of Service</h2>
-            <p className="mt-3 leading-7">
-              CarDealAlerts is an independent, automated monitoring tool that scans publicly
-              accessible vehicle listings on third-party marketplaces (such as Facebook Marketplace,
-              Craigslist, and Cars.com), applies AI-based deal scoring, and sends email alerts to
-              subscribers based on their saved search preferences.
+          <Section title="3. No Affiliation With Marketplaces">
+            <p>
+              CarDealAlerts is an independent software product.
             </p>
-            <p className="mt-3 leading-7">
-              <strong className="text-zinc-200">CarDealAlerts is not affiliated with, endorsed by,
-              or officially partnered with Facebook, Craigslist, Cars.com, OfferUp, AutoTrader,
-              or any vehicle marketplace.</strong> Marketplace names and logos are referenced solely
-              as source identifiers.
+            <p>
+              CarDealAlerts is not affiliated with, endorsed by, sponsored by, or officially connected to Facebook, Facebook Marketplace, Meta, Craigslist, Cars.com, OfferUp, AutoTrader, any vehicle marketplace, dealer, manufacturer, or seller.
             </p>
-          </section>
+            <p>
+              All marketplace names, logos, and trademarks belong to their respective owners and are used only for descriptive purposes.
+            </p>
+          </Section>
 
-          <section>
-            <h2 className="text-lg font-semibold text-white">3. Accounts and Eligibility</h2>
-            <p className="mt-3 leading-7">
-              You must be at least 18 years old to use the Service. You are responsible for
-              maintaining the confidentiality of your account credentials and for all activity
-              that occurs under your account.
+          <Section title="4. Vehicle Listings and Deal Alerts">
+            <p>
+              CarDealAlerts may provide alerts, estimated deal scores, price comparisons, listing summaries, and other information based on available data.
             </p>
-          </section>
+            <p>You understand and agree that:</p>
+            <ul>
+              <li>Vehicle listings may be inaccurate, outdated, incomplete, duplicated, removed, or changed by the original seller or marketplace.</li>
+              <li>Prices, mileage, condition, availability, title status, accident history, and seller information may not always be accurate.</li>
+              <li>Deal scores and AI-generated insights are estimates only.</li>
+              <li>A "good deal" or "underpriced" alert does not guarantee that the vehicle is safe, legitimate, available, or worth purchasing.</li>
+              <li>You are responsible for verifying all vehicle information before contacting a seller or making a purchase.</li>
+            </ul>
+          </Section>
 
-          <section>
-            <h2 className="text-lg font-semibold text-white">4. Subscription Plans and Billing</h2>
-            <p className="mt-3 leading-7">
-              CarDealAlerts offers a free tier and paid subscription plans (Pro and Dealer).
-              Paid plans are billed on a monthly basis. By subscribing to a paid plan, you
-              authorize us to charge your payment method on a recurring basis until you cancel.
+          <Section title="5. No Financial, Legal, Mechanical, or Purchasing Advice">
+            <p>
+              CarDealAlerts provides software-based information only. We do not provide financial advice, legal advice, insurance advice, mechanical inspections, title verification, fraud checks, or professional vehicle purchasing advice.
             </p>
-            <p className="mt-3 leading-7">
-              Plan features, including the number of saved searches, polling frequency, and
-              supported marketplaces, are described on the{' '}
-              <Link href="/pricing" className="text-emerald-400 hover:underline">Pricing page</Link>.
-              We reserve the right to change plan pricing or features with reasonable notice.
+            <p>
+              Before buying a vehicle, you should independently verify the listing, inspect the vehicle, check title and history reports, confirm ownership, review documents, and consult qualified professionals when needed.
             </p>
-          </section>
+          </Section>
 
-          <section>
-            <h2 className="text-lg font-semibold text-white">5. Refunds and Cancellations</h2>
-            <p className="mt-3 leading-7">
-              Refunds and cancellations are governed by our{' '}
-              <Link href="/refund" className="text-emerald-400 hover:underline">Refund &amp; Cancellation Policy</Link>.
-              Because CarDealAlerts is a digital subscription service, payments are generally
-              non-refundable once a billing period has started, except where required by law
-              or approved under our Refund Policy.
+          <Section title="6. User Accounts">
+            <p>
+              You may need to create an account to use certain features. You are responsible for keeping your login credentials secure and for all activity under your account.
             </p>
-          </section>
+            <p>You agree not to:</p>
+            <ul>
+              <li>Use the Service for illegal, fraudulent, abusive, or harmful purposes.</li>
+              <li>Attempt to copy, resell, reverse engineer, overload, scrape, or interfere with the Service.</li>
+              <li>Use the Service to spam sellers or marketplaces.</li>
+              <li>Misrepresent your identity or payment information.</li>
+              <li>Violate any applicable marketplace terms, laws, or regulations.</li>
+            </ul>
+            <p>
+              We may suspend or terminate accounts that violate these Terms or create risk for CarDealAlerts, users, marketplaces, or payment providers.
+            </p>
+          </Section>
 
-          <section>
-            <h2 className="text-lg font-semibold text-white">6. AI Estimates and Accuracy Disclaimer</h2>
-            <p className="mt-3 leading-7">
-              AI deal scores and estimated market values provided by the Service are
-              <strong className="text-zinc-200"> informational only</strong>. They are not
-              appraisals, vehicle inspections, or guarantees of any kind. CarDealAlerts does
-              not guarantee the accuracy, completeness, or availability of any listing data,
-              price estimate, or deal score.
+          <Section title="7. Subscriptions and Billing">
+            <p>
+              CarDealAlerts may offer free and paid subscription plans. Paid subscriptions provide access to additional features such as more saved searches, faster alerts, AI deal scoring, or dealer-focused tools.
             </p>
-            <p className="mt-3 leading-7">
-              Always verify vehicle history, title status, mechanical condition, and seller
-              legitimacy before making any purchase decision.
+            <p>
+              Payments are processed securely by Lemon Squeezy, our payment provider and Merchant of Record. Lemon Squeezy may handle payment processing, tax calculation, invoices, fraud prevention, and related payment services. Lemon Squeezy describes itself as a Merchant of Record that handles payments, fraud, and sales tax for digital sales.
             </p>
-          </section>
+            <p>
+              By purchasing a subscription, you also agree to Lemon Squeezy's applicable buyer terms and checkout policies.
+            </p>
+          </Section>
 
-          <section>
-            <h2 className="text-lg font-semibold text-white">7. Acceptable Use</h2>
-            <p className="mt-3 leading-7">
-              You agree not to use the Service to scrape, resell, or redistribute listing data;
-              to violate any applicable laws; to interfere with the Service's infrastructure;
-              or to circumvent any access controls or subscription limits.
+          <Section title="8. Renewals and Cancellation">
+            <p>
+              Paid subscriptions renew automatically unless cancelled before the next billing date.
             </p>
-          </section>
+            <p>
+              You may cancel your subscription at any time through your account, billing portal, or by contacting us at{' '}
+              <a href="mailto:support@cardealalerts.com">support@cardealalerts.com</a>.
+            </p>
+            <p>
+              After cancellation, you will continue to have access to paid features until the end of your current billing period, unless otherwise stated.
+            </p>
+          </Section>
 
-          <section>
-            <h2 className="text-lg font-semibold text-white">8. Intellectual Property</h2>
-            <p className="mt-3 leading-7">
-              The Service, including its design, software, and content, is owned by or licensed
-              to CarDealAlerts. You may not copy, reproduce, or distribute any part of the
-              Service without our written consent.
+          <Section title="9. Refund Policy">
+            <p>
+              Because CarDealAlerts is a digital subscription service, payments are generally non-refundable once a billing period has started.
             </p>
-          </section>
+            <p>However, we may provide a refund when:</p>
+            <ul>
+              <li>You were charged because of a technical billing error.</li>
+              <li>You cancelled but were still charged incorrectly.</li>
+              <li>The Service was unavailable due to a major technical issue and we could not resolve it.</li>
+              <li>A refund is required by applicable law.</li>
+            </ul>
+            <p>
+              Refund requests must be sent to{' '}
+              <a href="mailto:support@cardealalerts.com">support@cardealalerts.com</a>{' '}
+              within 14 days of the charge and should include the account email, order number, and reason for the request.
+            </p>
+            <p>
+              Lemon Squeezy allows sellers to set their own refund policies, but it may also issue refunds within 60 days to help prevent chargebacks or manage risk.
+            </p>
+          </Section>
 
-          <section>
-            <h2 className="text-lg font-semibold text-white">9. Limitation of Liability</h2>
-            <p className="mt-3 leading-7">
-              To the fullest extent permitted by law, CarDealAlerts and its operators shall not
-              be liable for any indirect, incidental, special, consequential, or punitive damages
-              arising from your use of the Service or any listing data accessed through it.
-              Our total liability for any claim related to the Service shall not exceed the
-              amount you paid us in the three months preceding the claim.
+          <Section title="10. Free Plans and Trials">
+            <p>
+              We may offer free plans, limited searches, trial access, or promotional credits. Free features may be limited, changed, suspended, or discontinued at any time.
             </p>
-          </section>
+            <p>
+              Abuse of free plans, fake accounts, or attempts to bypass usage limits may result in account suspension.
+            </p>
+          </Section>
 
-          <section>
-            <h2 className="text-lg font-semibold text-white">10. Termination</h2>
-            <p className="mt-3 leading-7">
-              We may suspend or terminate your access to the Service at any time for violation
-              of these Terms or for any other reason with reasonable notice. You may cancel your
-              subscription at any time through your account settings.
+          <Section title="11. Service Availability">
+            <p>
+              We try to keep CarDealAlerts reliable, but we do not guarantee uninterrupted access. The Service may be delayed, unavailable, or inaccurate due to maintenance, technical problems, marketplace changes, third-party issues, API limitations, data availability, or other causes.
             </p>
-          </section>
+          </Section>
 
-          <section>
-            <h2 className="text-lg font-semibold text-white">11. Changes to Terms</h2>
-            <p className="mt-3 leading-7">
-              We may update these Terms from time to time. We will notify you of material
-              changes by email or by posting a notice on the Service. Continued use of the
-              Service after changes take effect constitutes your acceptance of the updated Terms.
+          <Section title="12. Third-Party Services">
+            <p>
+              CarDealAlerts may rely on third-party services for hosting, analytics, email delivery, payments, marketplace data, AI processing, and other infrastructure.
             </p>
-          </section>
+            <p>We are not responsible for third-party websites, sellers, marketplaces, tools, or services.</p>
+          </Section>
 
-          <section>
-            <h2 className="text-lg font-semibold text-white">12. Governing Law</h2>
-            <p className="mt-3 leading-7">
-              These Terms are governed by applicable law. Any disputes shall be resolved in the
-              jurisdiction where the operator is located.
+          <Section title="13. Intellectual Property">
+            <p>
+              CarDealAlerts, including its website, software, design, branding, content, workflows, and technology, is owned by us or our licensors.
             </p>
-          </section>
+            <p>
+              You may not copy, reproduce, sell, distribute, modify, or create derivative works from our Service without permission.
+            </p>
+          </Section>
 
-          <section className="rounded-xl border border-white/10 bg-zinc-900 p-6">
-            <h2 className="text-lg font-semibold text-white">13. Operator / Contact</h2>
-            <p className="mt-3 leading-7">
-              CarDealAlerts is operated by:
-            </p>
-            <div className="mt-3 space-y-1 text-sm text-zinc-400">
-              <p><span className="text-zinc-300">Business owner / operator:</span> CarDealAlerts</p>
-              <p><span className="text-zinc-300">Business address:</span> To be updated</p>
-              <p>
-                <span className="text-zinc-300">Contact:</span>{' '}
-                <a href="mailto:support@cardealalerts.com" className="text-emerald-400 hover:underline">
-                  support@cardealalerts.com
-                </a>
-              </p>
-            </div>
-            <p className="mt-4 text-xs text-zinc-600">
-              CarDealAlerts is an independent tool and is not affiliated with any marketplace
-              listed on this website.
-            </p>
-          </section>
+          <Section title="14. Disclaimer of Warranties">
+            <p>The Service is provided "as is" and "as available."</p>
+            <p>We do not guarantee that:</p>
+            <ul>
+              <li>Alerts will be complete, instant, or accurate.</li>
+              <li>Any vehicle is a good deal.</li>
+              <li>Any listing is legitimate or available.</li>
+              <li>Any user will save money or make a successful purchase.</li>
+              <li>The Service will meet your expectations or be error-free.</li>
+            </ul>
+          </Section>
 
+          <Section title="15. Limitation of Liability">
+            <p>
+              To the maximum extent permitted by law, CarDealAlerts will not be liable for indirect, incidental, special, consequential, or punitive damages, including lost profits, lost opportunities, vehicle purchase losses, fraud losses, seller disputes, or marketplace issues.
+            </p>
+            <p>
+              Our total liability for any claim related to the Service will not exceed the amount you paid to CarDealAlerts during the three months before the claim.
+            </p>
+          </Section>
+
+          <Section title="16. Changes to the Service or Terms">
+            <p>
+              We may update the Service or these Terms from time to time. If we make material changes, we may notify users through the website, email, or account dashboard.
+            </p>
+            <p>
+              Your continued use of the Service after changes means you accept the updated Terms.
+            </p>
+          </Section>
+
+          <Section title="17. Contact">
+            <p>For questions about these Terms, subscriptions, cancellations, or refunds, contact:</p>
+            <ContactCard />
+          </Section>
         </div>
-      </div>
+      </main>
 
-      {/* Footer */}
       <LegalFooter />
     </div>
-  )
-}
-
-function LegalFooter() {
-  return (
-    <footer className="border-t border-white/10 bg-zinc-900/40 px-6 py-8">
-      <div className="mx-auto flex max-w-4xl flex-wrap gap-4 text-sm text-zinc-500">
-        <Link href="/" className="hover:text-zinc-300">Home</Link>
-        <Link href="/pricing" className="hover:text-zinc-300">Pricing</Link>
-        <Link href="/terms" className="hover:text-zinc-300">Terms of Service</Link>
-        <Link href="/privacy" className="hover:text-zinc-300">Privacy Policy</Link>
-        <Link href="/refund" className="hover:text-zinc-300">Refund Policy</Link>
-        <Link href="/contact" className="hover:text-zinc-300">Contact</Link>
-      </div>
-      <p className="mx-auto mt-4 max-w-4xl text-xs text-zinc-600">
-        © {new Date().getFullYear()} CarDealAlerts. Not affiliated with any marketplace.
-      </p>
-    </footer>
   )
 }

@@ -7,7 +7,7 @@ export const PLANS = {
     price: 0,
     priceLabel: 'Free forever',
     // maxSearches is LIFETIME for Free plan — does not reset
-    maxSearches: 3,
+    maxSearches: 1,
     pollingMinutes: 720,               // every 12 hours
     maxRunsPerDay: 6,                  // 2 runs per search per day
     maxRunsPerMonth: 90,               // safety ceiling
@@ -18,7 +18,7 @@ export const PLANS = {
     aiFiltering: true,
     aiModel: 'sonnet' as const,
     features: [
-      '3 searches (lifetime)',
+      '1 saved search (lifetime)',
       'Facebook Marketplace',
       'Twice daily alerts',
       'Daily email digest',
@@ -71,7 +71,7 @@ export const PLANS = {
       'Facebook + Craigslist + Cars.com',
       'Every 2 hours polling',
       'Instant email alerts',
-      'AI deal scoring (Claude Sonnet 4)',
+      'Advanced AI deal scoring',
       'Full market coverage',
       'Priority scraping queue',
       '180 runs per day',

@@ -15,7 +15,6 @@ import {
   Sparkles,
   TrendingUp,
   AlertTriangle,
-  Star,
 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -125,7 +124,7 @@ const faqs = [
   },
   {
     q: "Can I start for free?",
-    a: "Yes. The free plan includes 1 saved search, Facebook Marketplace monitoring, and a daily email digest with twice-daily checks.",
+    a: "Yes. The free plan includes 1 saved search, Facebook Marketplace monitoring, and a daily email digest with twice-daily scans.",
   },
   {
     q: "Who is the Dealer plan for?",
@@ -166,13 +165,8 @@ function JsonLd() {
 
 function Logo() {
   return (
-    <Link href="/" className="flex items-center gap-2" aria-label="CarDealAlerts home">
-      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-400 text-zinc-950">
-        <Gauge size={19} strokeWidth={2.5} />
-      </span>
-      <span className="text-lg font-semibold tracking-tight text-white">
-        CarDealAlerts
-      </span>
+    <Link href="/" aria-label="CarDealAlerts home">
+      <img src="/logo-dark.svg" alt="CarDealAlerts" className="h-10 w-auto" />
     </Link>
   );
 }
@@ -308,15 +302,14 @@ export default function Home() {
             Never miss an underpriced used car again.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-zinc-300">
-            CarDealAlerts monitors vehicle listings from supported marketplaces and
-            alerts you when a local car looks like a strong deal — before someone else calls first.
+            Get fast alerts when underpriced used cars appear on Facebook Marketplace, Craigslist, and Cars.com.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
               href="/register"
               className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-emerald-400 px-6 text-sm font-semibold text-zinc-950 transition hover:bg-emerald-300"
             >
-              Start Free
+              Start free
               <ArrowRight size={18} />
             </Link>
             <a
@@ -513,11 +506,8 @@ export default function Home() {
                 and AI-detected red flags so you can act with confidence.
               </p>
               <div className="mt-6 rounded-lg border border-white/10 bg-zinc-900 px-4 py-3 text-xs leading-5 text-zinc-500">
-                DealScore is an estimate based on listing price, year, mileage, make/model, local
-                market comparison, listing quality, and possible risk signals. It is{" "}
-                <strong className="text-zinc-400">not a vehicle inspection or guarantee</strong> of price,
-                availability, or condition. Always verify vehicle history, title status, and seller
-                legitimacy before purchasing.
+                <strong className="text-zinc-400">Built to help you move faster — not replace your judgment.</strong>{" "}
+                CarDealAlerts helps you spot possible deals faster, but you should always verify title status, vehicle history, seller legitimacy, availability, and condition before buying.
               </div>
             </div>
             <div>
@@ -739,31 +729,47 @@ export default function Home() {
       </div>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-white/10 bg-zinc-950 px-5 py-10 sm:px-6">
+      <footer className="border-t border-white/10 bg-zinc-950 px-5 py-12 sm:px-6">
         <div className="mx-auto max-w-7xl">
-          <div className="grid gap-8 sm:grid-cols-[1fr_auto]">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-400 text-zinc-950">
-                  <Gauge size={16} strokeWidth={2.5} />
-                </span>
-                <span className="font-semibold text-white">CarDealAlerts</span>
-              </div>
-              <p className="mt-3 max-w-sm text-xs leading-5 text-zinc-500">
-                CarDealAlerts is an independent tool and is not affiliated with any marketplace
-                listed on this website.
+          <div className="grid gap-10 sm:grid-cols-[1fr_auto]">
+            {/* Brand + disclaimer */}
+            <div className="max-w-md space-y-3">
+              <Link href="/" aria-label="CarDealAlerts home">
+                <img src="/logo-dark.svg" alt="CarDealAlerts" className="h-8 w-auto" />
+              </Link>
+              <p className="text-xs leading-5 text-zinc-500">
+                CarDealAlerts is not affiliated with Facebook, Craigslist, Cars.com, OfferUp,
+                AutoTrader, or any vehicle marketplace. All trademarks belong to their respective owners.
+              </p>
+              <p className="text-xs text-zinc-500">
+                Support:{' '}
+                <a href="mailto:support@cardealalerts.com" className="text-emerald-400 hover:underline transition-colors">
+                  support@cardealalerts.com
+                </a>
               </p>
             </div>
-            <div className="flex flex-wrap gap-6 text-sm text-zinc-500">
-              <Link href="/pricing" className="hover:text-zinc-300">Pricing</Link>
-              <Link href="/login" className="hover:text-zinc-300">Log in</Link>
-              <Link href="/register" className="hover:text-zinc-300">Sign up</Link>
-              <Link href="/terms" className="hover:text-zinc-300">Terms</Link>
-              <Link href="/privacy" className="hover:text-zinc-300">Privacy Policy</Link>
-              <Link href="/contact" className="hover:text-zinc-300">Contact</Link>
+            {/* Nav links */}
+            <div className="flex flex-col gap-6 text-sm text-zinc-500 sm:flex-row sm:gap-10">
+              <div className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-widest text-zinc-600">Product</p>
+                <div className="flex flex-col gap-2">
+                  <Link href="/pricing" className="hover:text-zinc-300 transition-colors">Pricing</Link>
+                  <Link href="/login" className="hover:text-zinc-300 transition-colors">Log in</Link>
+                  <Link href="/register" className="hover:text-zinc-300 transition-colors">Sign up</Link>
+                  <Link href="/contact" className="hover:text-zinc-300 transition-colors">Contact</Link>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-widest text-zinc-600">Legal</p>
+                <div className="flex flex-col gap-2">
+                  <Link href="/terms" className="hover:text-zinc-300 transition-colors">Terms of Service</Link>
+                  <Link href="/privacy" className="hover:text-zinc-300 transition-colors">Privacy Policy</Link>
+                  <Link href="/refund-policy" className="hover:text-zinc-300 transition-colors">Refund Policy</Link>
+                </div>
+              </div>
             </div>
           </div>
-          <div className="mt-8 border-t border-white/8 pt-6 text-xs text-zinc-600">
+          <div className="mt-10 border-t border-white/8 pt-6 text-xs text-zinc-600">
             © {new Date().getFullYear()} CarDealAlerts. All rights reserved.
           </div>
         </div>

@@ -1,206 +1,229 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { LegalNav, LegalFooter, Section, Subsection, ContactCard } from '@/app/_legal/components'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
   description: 'Privacy Policy for CarDealAlerts.',
-}
-
-const EFFECTIVE_DATE = 'June 5, 2026'
-
-function LegalFooter() {
-  return (
-    <footer className="border-t border-white/10 bg-zinc-900/40 px-6 py-8">
-      <div className="mx-auto flex max-w-4xl flex-wrap gap-4 text-sm text-zinc-500">
-        <Link href="/" className="hover:text-zinc-300">Home</Link>
-        <Link href="/pricing" className="hover:text-zinc-300">Pricing</Link>
-        <Link href="/terms" className="hover:text-zinc-300">Terms of Service</Link>
-        <Link href="/privacy" className="hover:text-zinc-300">Privacy Policy</Link>
-        <Link href="/refund" className="hover:text-zinc-300">Refund Policy</Link>
-        <Link href="/contact" className="hover:text-zinc-300">Contact</Link>
-      </div>
-      <p className="mx-auto mt-4 max-w-4xl text-xs text-zinc-600">
-        © {new Date().getFullYear()} CarDealAlerts. Not affiliated with any marketplace.
-      </p>
-    </footer>
-  )
+  alternates: { canonical: '/privacy' },
 }
 
 export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
-      {/* Nav */}
-      <nav className="border-b border-white/10 px-6 py-4">
-        <div className="mx-auto flex max-w-4xl items-center justify-between">
-          <Link href="/" className="text-lg font-semibold text-white hover:text-emerald-300">
-            CarDealAlerts
-          </Link>
-          <Link href="/login" className="text-sm text-zinc-400 hover:text-zinc-200">Log in</Link>
+      <LegalNav />
+
+      <main className="mx-auto max-w-4xl px-6 py-16 pb-24">
+        <div className="mb-10">
+          <p className="text-xs font-semibold uppercase tracking-widest text-emerald-500">Legal</p>
+          <h1 className="mt-3 text-4xl font-bold tracking-tight text-white">Privacy Policy</h1>
+          <p className="mt-3 text-sm text-zinc-500">Last updated: June 4, 2026</p>
         </div>
-      </nav>
 
-      <div className="mx-auto max-w-4xl px-6 py-16 pb-24">
-        <h1 className="text-3xl font-bold text-white">Privacy Policy</h1>
-        <p className="mt-2 text-sm text-zinc-500">Effective date: {EFFECTIVE_DATE}</p>
-
-        <div className="mt-10 space-y-8 text-zinc-300">
-
-          <section>
-            <h2 className="text-lg font-semibold text-white">1. Overview</h2>
-            <p className="mt-3 leading-7">
-              CarDealAlerts ("we", "us", "our") respects your privacy. This Privacy Policy explains
-              what information we collect, how we use it, and your rights regarding that information
-              when you use CarDealAlerts.
+        <div className="space-y-10 text-zinc-300">
+          <div className="space-y-4 text-base leading-7">
+            <p>
+              CarDealAlerts ("we," "us," or "our") respects your privacy. This Privacy Policy explains how we collect, use, store, and protect information when you use our website, software, alerts, subscriptions, and related services ("Service").
             </p>
-            <p className="mt-3 leading-7">
-              CarDealAlerts is not affiliated with Facebook, Craigslist, Cars.com, OfferUp,
-              AutoTrader, or any vehicle marketplace. We are an independent monitoring tool.
-            </p>
-          </section>
+            <p>By using CarDealAlerts, you agree to this Privacy Policy.</p>
+          </div>
 
-          <section>
-            <h2 className="text-lg font-semibold text-white">2. Information We Collect</h2>
+          <Section title="1. Information We Collect">
+            <p>We may collect the following information:</p>
 
-            <h3 className="mt-4 font-medium text-zinc-200">a. Account information</h3>
-            <p className="mt-2 leading-7">
-              When you register, we collect your name, email address, and a hashed password.
-              If you sign in with a third-party provider (e.g. Google), we receive basic profile
-              information from that provider.
-            </p>
+            <Subsection title="Account information">
+              <ul>
+                <li>Name</li>
+                <li>Email address</li>
+                <li>Password or authentication details</li>
+                <li>Account preferences</li>
+              </ul>
+            </Subsection>
 
-            <h3 className="mt-4 font-medium text-zinc-200">b. Saved searches and alert preferences</h3>
-            <p className="mt-2 leading-7">
-              We store the search filters you configure: vehicle make, model, year range, price
-              range, mileage limit, keywords, blacklist terms, and marketplace selections.
-              We may process approximate location information you provide, such as city, state,
-              ZIP code, or search radius, only to deliver relevant vehicle alerts.
-            </p>
-
-            <h3 className="mt-4 font-medium text-zinc-200">c. Usage data</h3>
-            <p className="mt-2 leading-7">
-              We collect standard server logs including IP address, browser type, pages visited,
-              and timestamps. This data is used for security, debugging, and improving the Service.
-            </p>
-
-            <h3 className="mt-4 font-medium text-zinc-200">d. Payment information</h3>
-            <p className="mt-2 leading-7">
-              Payments are processed by Lemon Squeezy. We do not store your full payment card
-              details. We may receive billing metadata (e.g. subscription status, plan type,
-              customer ID) from the payment processor.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-lg font-semibold text-white">3. How We Use Your Information</h2>
-            <ul className="mt-3 list-disc space-y-2 pl-5 leading-7">
-              <li>To create and manage your account.</li>
-              <li>To run saved searches and deliver vehicle deal alerts by email.</li>
-              <li>To process payments and manage your subscription.</li>
-              <li>To send transactional emails (alerts, account notifications).</li>
-              <li>To improve and debug the Service.</li>
-              <li>To comply with legal obligations.</li>
-            </ul>
-            <p className="mt-3 leading-7">
-              We do not sell your personal data to third parties.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-lg font-semibold text-white">4. Location and Search Data</h2>
-            <p className="mt-3 leading-7">
-              CarDealAlerts uses location information (city, state, ZIP code, or search radius)
-              that you provide when setting up saved searches. This data is stored and used
-              exclusively to filter and deliver vehicle listings relevant to your specified area.
-              We do not collect your precise device location via GPS or similar means.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-lg font-semibold text-white">5. Cookies and Tracking</h2>
-            <p className="mt-3 leading-7">
-              We use essential cookies to maintain your session and authentication state.
-              We do not currently use advertising cookies or cross-site tracking.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-lg font-semibold text-white">6. Third-Party Services</h2>
-            <p className="mt-3 leading-7">
-              We use the following third-party services to operate the platform:
-            </p>
-            <ul className="mt-3 list-disc space-y-2 pl-5 leading-7">
-              <li><strong className="text-zinc-200">Lemon Squeezy</strong> — payment processing and subscription management.</li>
-              <li><strong className="text-zinc-200">Resend</strong> or similar — transactional email delivery.</li>
-              <li><strong className="text-zinc-200">AWS Bedrock / Anthropic Claude</strong> — AI-based deal scoring (listing data only, no personal information).</li>
-              <li><strong className="text-zinc-200">Neon / PostgreSQL</strong> — secure database hosting.</li>
-              <li><strong className="text-zinc-200">Vercel</strong> — application hosting and edge network.</li>
-            </ul>
-            <p className="mt-3 leading-7">
-              Each of these services has its own privacy policy. We only share data with them
-              to the extent necessary to provide the Service.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-lg font-semibold text-white">7. Data Retention</h2>
-            <p className="mt-3 leading-7">
-              We retain your account data as long as your account is active. If you delete your
-              account, we will remove your personal data within a reasonable period, except where
-              retention is required by law (e.g. billing records).
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-lg font-semibold text-white">8. Your Rights</h2>
-            <p className="mt-3 leading-7">
-              Depending on your jurisdiction, you may have rights to access, correct, or delete
-              your personal data; to opt out of certain processing; and to data portability.
-              To exercise any of these rights, contact us at{' '}
-              <a href="mailto:support@cardealalerts.com" className="text-emerald-400 hover:underline">
-                support@cardealalerts.com
-              </a>.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-lg font-semibold text-white">9. Children&apos;s Privacy</h2>
-            <p className="mt-3 leading-7">
-              The Service is not directed at children under 18 years of age. We do not knowingly
-              collect personal information from children.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-lg font-semibold text-white">10. Changes to This Policy</h2>
-            <p className="mt-3 leading-7">
-              We may update this Privacy Policy periodically. We will notify you of material
-              changes by email or by posting a notice on the Service.
-            </p>
-          </section>
-
-          <section className="rounded-xl border border-white/10 bg-zinc-900 p-6">
-            <h2 className="text-lg font-semibold text-white">11. Operator / Contact</h2>
-            <p className="mt-3 leading-7">
-              CarDealAlerts is operated by:
-            </p>
-            <div className="mt-3 space-y-1 text-sm text-zinc-400">
-              <p><span className="text-zinc-300">Business owner / operator:</span> CarDealAlerts</p>
-              <p><span className="text-zinc-300">Business address:</span> To be updated</p>
+            <Subsection title="Subscription and billing information">
+              <ul>
+                <li>Plan type</li>
+                <li>Subscription status</li>
+                <li>Billing email</li>
+                <li>Order ID</li>
+                <li>Payment status</li>
+                <li>Billing portal links</li>
+              </ul>
               <p>
-                <span className="text-zinc-300">Contact:</span>{' '}
-                <a href="mailto:support@cardealalerts.com" className="text-emerald-400 hover:underline">
-                  support@cardealalerts.com
-                </a>
+                Payments are processed by Lemon Squeezy. We do not store full credit card numbers or complete payment card details on our servers.
               </p>
-            </div>
-            <p className="mt-4 text-xs text-zinc-600">
-              CarDealAlerts is an independent tool and is not affiliated with any marketplace
-              listed on this website.
-            </p>
-          </section>
+            </Subsection>
 
+            <Subsection title="Search and alert information">
+              <ul>
+                <li>Saved vehicle searches</li>
+                <li>Preferred make, model, year, price range, mileage, location, and other filters</li>
+                <li>Alert preferences</li>
+                <li>Deal alerts sent to you</li>
+                <li>User interactions with alerts</li>
+              </ul>
+            </Subsection>
+
+            <Subsection title="Technical information">
+              <ul>
+                <li>IP address</li>
+                <li>Browser type</li>
+                <li>Device type</li>
+                <li>Operating system</li>
+                <li>Pages visited</li>
+                <li>Referring URLs</li>
+                <li>Cookies and similar technologies</li>
+                <li>Log data and error reports</li>
+              </ul>
+            </Subsection>
+
+            <Subsection title="Communication information">
+              <ul>
+                <li>Support requests</li>
+                <li>Feedback</li>
+                <li>Emails or messages you send to us</li>
+              </ul>
+            </Subsection>
+          </Section>
+
+          <Section title="2. How We Use Your Information">
+            <p>We use your information to:</p>
+            <ul>
+              <li>Provide and operate CarDealAlerts.</li>
+              <li>Create and manage your account.</li>
+              <li>Save your vehicle searches.</li>
+              <li>Send deal alerts and product notifications.</li>
+              <li>Process subscriptions and manage billing.</li>
+              <li>Provide customer support.</li>
+              <li>Improve search quality, alert accuracy, and AI-assisted deal scoring.</li>
+              <li>Detect fraud, abuse, technical issues, and security risks.</li>
+              <li>Analyze website and product performance.</li>
+              <li>Comply with legal, tax, payment, and security obligations.</li>
+            </ul>
+          </Section>
+
+          <Section title="3. Payment Processing">
+            <p>
+              Payments are handled by Lemon Squeezy, which acts as a payment provider and Merchant of Record for digital products. Lemon Squeezy may process personal and payment information to complete purchases, calculate taxes, issue invoices, manage subscriptions, and prevent fraud. Lemon Squeezy states that it handles payments, fraud, merchant fees, and sales tax as Merchant of Record.
+            </p>
+            <p>
+              Your use of Lemon Squeezy checkout may also be governed by Lemon Squeezy's own terms, buyer terms, and privacy policy.
+            </p>
+          </Section>
+
+          <Section title="4. Cookies and Tracking">
+            <p>We may use cookies and similar technologies to:</p>
+            <ul>
+              <li>Keep you logged in.</li>
+              <li>Remember preferences.</li>
+              <li>Measure website traffic.</li>
+              <li>Understand product usage.</li>
+              <li>Improve performance.</li>
+              <li>Support security and fraud prevention.</li>
+            </ul>
+            <p>
+              You can control cookies through your browser settings. Some parts of the Service may not work correctly if cookies are disabled.
+            </p>
+          </Section>
+
+          <Section title="5. AI and Automated Processing">
+            <p>
+              CarDealAlerts may use AI-assisted systems to analyze vehicle listings, compare pricing signals, summarize listings, and generate deal scores.
+            </p>
+            <p>
+              AI-generated outputs are estimates only and may be inaccurate or incomplete. We do not use AI outputs as a substitute for professional vehicle inspections, legal checks, financial advice, or seller verification.
+            </p>
+          </Section>
+
+          <Section title="6. How We Share Information">
+            <p>
+              We may share limited information with trusted service providers that help us operate the Service, including:
+            </p>
+            <ul>
+              <li>Payment processors</li>
+              <li>Hosting providers</li>
+              <li>Email delivery providers</li>
+              <li>Analytics providers</li>
+              <li>Customer support tools</li>
+              <li>Security and fraud prevention tools</li>
+              <li>AI infrastructure providers</li>
+            </ul>
+            <p>We do not sell your personal information.</p>
+            <p>
+              We may also disclose information if required by law, legal process, fraud prevention, payment disputes, enforcement of our Terms, or protection of our rights, users, and Service.
+            </p>
+          </Section>
+
+          <Section title="7. Data Retention">
+            <p>
+              We keep personal information only as long as reasonably necessary to provide the Service, manage accounts, comply with legal obligations, resolve disputes, enforce agreements, prevent fraud, and maintain business records.
+            </p>
+            <p>
+              If you delete your account, we may still retain limited records where required for billing, legal, fraud prevention, or compliance purposes.
+            </p>
+          </Section>
+
+          <Section title="8. Security">
+            <p>
+              We use reasonable technical and organizational measures to protect your information. However, no online service is completely secure, and we cannot guarantee absolute security.
+            </p>
+            <p>You are responsible for keeping your account password safe.</p>
+          </Section>
+
+          <Section title="9. Your Rights">
+            <p>Depending on your location, you may have rights to:</p>
+            <ul>
+              <li>Access the personal information we hold about you.</li>
+              <li>Correct inaccurate information.</li>
+              <li>Request deletion of your information.</li>
+              <li>Object to or restrict certain processing.</li>
+              <li>Request a copy of your data.</li>
+              <li>Withdraw consent where processing is based on consent.</li>
+            </ul>
+            <p>
+              To make a privacy request, contact us at{' '}
+              <a href="mailto:support@cardealalerts.com">support@cardealalerts.com</a>.
+            </p>
+          </Section>
+
+          <Section title="10. Email Communications">
+            <p>
+              We may send you service emails, billing emails, security emails, and deal alerts based on your saved searches.
+            </p>
+            <p>
+              You can unsubscribe from marketing emails at any time. Some transactional emails, such as billing, security, and account-related messages, may still be sent.
+            </p>
+          </Section>
+
+          <Section title="11. Children's Privacy">
+            <p>
+              CarDealAlerts is not intended for children under 18. We do not knowingly collect personal information from children under 18.
+            </p>
+          </Section>
+
+          <Section title="12. International Users">
+            <p>
+              Your information may be processed in countries different from where you live. By using the Service, you understand that your information may be transferred and processed internationally where our service providers operate.
+            </p>
+          </Section>
+
+          <Section title="13. Third-Party Links and Marketplaces">
+            <p>
+              CarDealAlerts may link to third-party vehicle listings, seller pages, marketplaces, or websites. We are not responsible for the privacy practices, content, accuracy, or actions of those third parties.
+            </p>
+          </Section>
+
+          <Section title="14. Changes to This Privacy Policy">
+            <p>
+              We may update this Privacy Policy from time to time. If we make material changes, we may notify users through the website, email, or account dashboard.
+            </p>
+          </Section>
+
+          <Section title="15. Contact">
+            <p>For privacy questions or requests, contact:</p>
+            <ContactCard />
+          </Section>
         </div>
-      </div>
+      </main>
 
       <LegalFooter />
     </div>

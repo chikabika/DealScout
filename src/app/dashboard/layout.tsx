@@ -16,7 +16,7 @@ export default async function DashboardLayout({
   return (
     <main className="grid min-h-screen bg-zinc-950 text-zinc-100 lg:grid-cols-[280px_1fr]">
       <aside className="border-b border-white/10 bg-black px-6 py-8 lg:border-b-0 lg:border-r">
-        <div className="text-xl font-semibold tracking-tight">CarDealAlerts</div>
+        <img src="/logo-dark.svg" alt="CarDealAlerts" className="h-9 w-auto" />
         <DashboardNav />
       </aside>
       <div className="flex min-h-screen flex-col">{children}</div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Check, ChevronLeft, Lock, Mail, Search, User } from "lucide-react";
+import { ArrowRight, Check, ChevronLeft, Lock, Mail, User } from "lucide-react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -149,16 +149,6 @@ export default function RegisterPage() {
 
             {/* Content */}
             <div className="relative flex h-full flex-col justify-between px-10 py-10">
-              <Link
-                href="/"
-                className="inline-flex items-center gap-2 text-lg font-semibold tracking-tight text-white"
-              >
-                <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-emerald-400/30 bg-emerald-400/10">
-                  <Search className="h-4 w-4 text-emerald-300" />
-                </span>
-                CarDealAlerts
-              </Link>
-
               <div className="max-w-xl">
                 <p className="text-sm font-medium uppercase tracking-[0.18em] text-emerald-300">
                   Start scouting in minutes
@@ -235,41 +225,15 @@ export default function RegisterPage() {
             <div className="flex flex-1 items-center justify-center px-5 py-8 sm:px-8">
               <div className="w-full max-w-md">
 
-                {/* Mobile branding + tagline */}
-                <div className="mb-8 lg:hidden">
-                  <Link
-                    href="/"
-                    className="inline-flex items-center gap-2 text-lg font-semibold tracking-tight text-white"
-                  >
-                    <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-emerald-400/30 bg-emerald-400/10">
-                      <Search className="h-4 w-4 text-emerald-300" />
-                    </span>
-                    CarDealAlerts
-                  </Link>
-                  <p className="mt-1.5 text-sm text-zinc-500">
-                    Find car deals before everyone else.
-                  </p>
-                </div>
-
                 {/* Form card */}
                 <form
                   onSubmit={onSubmit}
                   className="rounded-2xl border border-white/10 bg-zinc-900/60 p-7 shadow-2xl shadow-black/40 backdrop-blur-sm sm:p-9"
                 >
-                  {/* In-card branding mark */}
-                  <div className="mb-6 flex items-center gap-2">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-400/30 bg-emerald-400/10">
-                      <Search className="h-3.5 w-3.5 text-emerald-300" />
-                    </span>
-                    <span className="text-sm font-semibold tracking-tight text-zinc-300">
-                      CarDealAlerts
-                    </span>
-                  </div>
-
                   <div className="mb-7">
                     <p className="text-sm font-medium text-emerald-300">New account</p>
                     <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white">
-                      Join CarDealAlerts
+                      Create your account
                     </h1>
                     <p className="mt-2 text-sm leading-6 text-zinc-400">
                       Create an account once. We will sign you in and send you straight to the dashboard.
