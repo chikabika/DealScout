@@ -184,8 +184,8 @@ export default function PrivacyPage() {
               CarDealAlerts is operated by:
             </p>
             <div className="mt-3 space-y-1 text-sm text-zinc-400">
-              <p><span className="text-zinc-300">Business owner / operator:</span> [Your legal name or company name]</p>
-              <p><span className="text-zinc-300">Business address:</span> [Your business address, if available]</p>
+              <p><span className="text-zinc-300">Business owner / operator:</span> CarDealAlerts</p>
+              <p><span className="text-zinc-300">Business address:</span> To be updated</p>
               <p>
                 <span className="text-zinc-300">Contact:</span>{' '}
                 <a href="mailto:support@cardealalerts.com" className="text-emerald-400 hover:underline">
