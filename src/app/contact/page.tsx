@@ -39,8 +39,10 @@ export default function ContactPage() {
           </div>
           <div>
             <p className="text-sm text-zinc-500">Operator</p>
-            <p className="mt-1">CarDealAlerts</p>
-            <p className="text-sm text-zinc-500 mt-1">To be updated</p>
+            <p className="mt-1 font-medium text-white">CarDealAlerts</p>
+            <a href="https://www.cardealalerts.com" className="mt-0.5 block text-sm text-emerald-400 hover:underline">
+              https://www.cardealalerts.com
+            </a>
           </div>
           <div className="border-t border-white/10 pt-4 text-xs text-zinc-600">
             CarDealAlerts is an independent tool and is not affiliated with Facebook, Craigslist,
