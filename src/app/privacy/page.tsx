@@ -61,6 +61,10 @@ export default function PrivacyPage() {
                 <li>Deal alerts sent to you</li>
                 <li>User interactions with alerts</li>
               </ul>
+              <p>
+                We may process approximate location information you provide, such as city, state,
+                ZIP code, or search radius, only to deliver relevant vehicle alerts.
+              </p>
             </Subsection>
 
             <Subsection title="Technical information">

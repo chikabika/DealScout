@@ -126,22 +126,11 @@ export default function TermsPage() {
 
           <Section title="9. Refund Policy">
             <p>
-              Because CarDealAlerts is a digital subscription service, payments are generally non-refundable once a billing period has started.
-            </p>
-            <p>However, we may provide a refund when:</p>
-            <ul>
-              <li>You were charged because of a technical billing error.</li>
-              <li>You cancelled but were still charged incorrectly.</li>
-              <li>The Service was unavailable due to a major technical issue and we could not resolve it.</li>
-              <li>A refund is required by applicable law.</li>
-            </ul>
-            <p>
-              Refund requests must be sent to{' '}
-              <a href="mailto:support@cardealalerts.com">support@cardealalerts.com</a>{' '}
-              within 14 days of the charge and should include the account email, order number, and reason for the request.
-            </p>
-            <p>
-              Lemon Squeezy allows sellers to set their own refund policies, but it may also issue refunds within 60 days to help prevent chargebacks or manage risk.
+              Refunds and cancellations are governed by our{' '}
+              <a href="/refund">Refund &amp; Cancellation Policy</a>.
+              Because CarDealAlerts is a digital subscription service, payments are generally
+              non-refundable once a billing period has started, except where required by law
+              or approved under our Refund Policy.
             </p>
           </Section>
 
