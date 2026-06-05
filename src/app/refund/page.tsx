@@ -157,22 +157,24 @@ export default function RefundPage() {
 
           <section className="rounded-xl border border-white/10 bg-zinc-900 p-6">
             <h2 className="text-lg font-semibold text-white">8. Operator / Contact</h2>
-            <p className="mt-3 leading-7">
-              CarDealAlerts is operated by:
-            </p>
-            <div className="mt-3 space-y-1 text-sm text-zinc-400">
-              <p><span className="text-zinc-300">Business owner / operator:</span> CarDealAlerts</p>
-              <p><span className="text-zinc-300">Business address:</span> To be updated</p>
-              <p>
-                <span className="text-zinc-300">Contact:</span>{' '}
+            <div className="mt-3 space-y-1 text-sm">
+              <p className="font-semibold text-white">CarDealAlerts</p>
+              <p className="text-zinc-400">
+                Contact:{' '}
                 <a href="mailto:support@cardealalerts.com" className="text-emerald-400 hover:underline">
                   support@cardealalerts.com
                 </a>
               </p>
+              <p className="text-zinc-400">
+                Website:{' '}
+                <a href="https://www.cardealalerts.com" className="text-emerald-400 hover:underline">
+                  https://www.cardealalerts.com
+                </a>
+              </p>
             </div>
             <p className="mt-4 text-xs text-zinc-600">
-              CarDealAlerts is an independent tool and is not affiliated with any marketplace
-              listed on this website.
+              CarDealAlerts is an independent tool and is not affiliated with Facebook, Craigslist,
+              Cars.com, OfferUp, AutoTrader, or any vehicle marketplace.
             </p>
           </section>
 
