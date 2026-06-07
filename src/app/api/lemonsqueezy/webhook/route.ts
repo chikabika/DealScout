@@ -78,7 +78,11 @@ export async function POST(req: Request) {
   const data = event.data?.attributes ?? {}
   const customData = event.meta?.custom_data ?? {}
 
-  const userId = typeof customData.userId === 'string' ? customData.userId : null
+  const userId = typeof customData.user_id === 'string'
+    ? customData.user_id
+    : typeof customData.userId === 'string'
+    ? customData.userId
+    : null
   const userEmail: string = data.user_email ?? ''
   const customerId = String(data.customer_id ?? '')
   const variantId = String(data.variant_id ?? data.first_order_item?.variant_id ?? '')
