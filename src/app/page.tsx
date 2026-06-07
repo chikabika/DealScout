@@ -81,7 +81,7 @@ const liveProviders = [
     logo: "🏷️",
     logoUrl: "/providers/carsdotcom.svg",
     brandColor: "#6B2D8B",
-    plans: "Dealer only",
+    plans: "Pro, Dealer",
     filters: "State, price, year, make, model",
   },
 ];
@@ -116,7 +116,7 @@ const trustPoints = [
 const faqs = [
   {
     q: "What marketplaces does CarDealAlerts support?",
-    a: "Facebook Marketplace is available on all plans. Craigslist is available on Pro and Dealer plans. Cars.com dealer inventory is available on the Dealer plan.",
+    a: "Facebook Marketplace is available on all plans. Craigslist is available on Pro and Dealer plans. Cars.com dealer inventory is available on Pro and Dealer plans.",
   },
   {
     q: "How does AI deal scoring work?",
@@ -393,7 +393,7 @@ export default function Home() {
               <div className="mt-6 grid gap-3">
                 {[
                   ["Free", null, "Facebook Marketplace · Twice daily"],
-                  ["Pro", "$49/mo", "Facebook + Craigslist · Every 4 hours"],
+                  ["Pro", "$49/mo", "Facebook + Craigslist + Cars.com · Every 4 hours"],
                   ["Dealer", "$149/mo", "Facebook + Craigslist + Cars.com · Every 2 hours"],
                 ].map(([plan, price, access]) => (
                   <div

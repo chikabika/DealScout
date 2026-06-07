@@ -257,7 +257,7 @@ export function SearchForm({
 
                         // Plan-locked: not allowed on current plan
                         if (!isAllowed) {
-                          const requiredPlan = provider.id === 'carsdotcom' ? 'Dealer' : 'Pro'
+                          const requiredPlan = 'Pro'
                           return (
                             <Link
                               key={provider.id}

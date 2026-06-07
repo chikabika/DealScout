@@ -35,7 +35,7 @@ export const PLANS = {
     maxRunsPerDay: 30,                 // 5 searches × 6 runs/day
     maxRunsPerMonth: 600,              // hard ceiling
     maxItemsPerRun: 15,
-    allowedProviders: ['facebook', 'craigslist'] as string[],
+    allowedProviders: ['facebook', 'craigslist', 'carsdotcom'] as string[],
     emailMode: 'instant' as const,
     aiScoring: true,
     aiFiltering: true,
@@ -43,7 +43,7 @@ export const PLANS = {
     popular: true,
     features: [
       '5 searches',
-      'Facebook + Craigslist',
+      'Facebook + Craigslist + Cars.com',
       'Every 4 hours polling',
       'Instant email alerts',
       'AI deal scoring',

@@ -242,7 +242,7 @@ export default function PricingPage() {
         <div className="grid gap-6 sm:grid-cols-3">
           <PlanCard
             plan={PLANS.free}
-            cta="Start free"
+            cta="Create Your First Alert"
             ctaHref="/register"
             ctaVariant="ghost"
           />

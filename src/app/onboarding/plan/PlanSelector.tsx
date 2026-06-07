@@ -118,10 +118,8 @@ export function PlanSelector({ userName }: Props) {
 
         {/* Header */}
         <div className="mb-12 text-center">
-          <div className="mb-4 flex justify-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10">
-              <span className="text-2xl">🚗</span>
-            </div>
+          <div className="mb-6 flex justify-center">
+            <img src="/logo-dark.svg" alt="CarDealAlerts" className="h-10 w-auto" />
           </div>
           <h1 className="text-3xl font-bold text-white">
             Welcome, {firstName}!

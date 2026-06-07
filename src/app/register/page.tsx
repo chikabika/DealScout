@@ -249,7 +249,7 @@ export default function RegisterPage() {
                         name="name"
                         type="text"
                         className="h-full min-w-0 flex-1 bg-transparent text-zinc-100 outline-none placeholder:text-zinc-600"
-                        placeholder="Salah"
+                        placeholder="Jane Doe"
                       />
                     </span>
                   </label>

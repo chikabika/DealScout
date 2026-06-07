@@ -123,6 +123,9 @@ async function runFacebookScraper(search: Search, maxItems: number): Promise<Api
 
   console.log('[CRON] Facebook URL:', builtUrl)
 
+  const safeMaxItems = Math.max(1, maxItems ?? 10)
+  console.log('[CRON] Facebook scraper — maxItems:', safeMaxItems, 'plan.maxItemsPerRun:', maxItems)
+
   const startRes = await fetch(
     `https://api.apify.com/v2/acts/happitap~facebook-marketplace-listings-scraper/runs?token=${token}`,
     {
@@ -130,7 +133,7 @@ async function runFacebookScraper(search: Search, maxItems: number): Promise<Api
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         urls: [{ url: builtUrl }],
-        maxItems,
+        maxItems: safeMaxItems,
       }),
     },
   )
