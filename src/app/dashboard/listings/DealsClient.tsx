@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   Clock,
   ExternalLink,
+  Globe,
   Info,
   LayoutGrid,
   List,
@@ -878,6 +879,7 @@ export function DealsClient({
 }) {
   const [titleFilter, setTitleFilter] = useState('')
   const [selectedSearch, setSelectedSearch] = useState(initialSearch ?? 'all')
+  const [selectedProvider, setSelectedProvider] = useState<string>('all')
   const [sortBy, setSortBy] = useState<SortKey>('newest')
   const [minPriceInput, setMinPriceInput] = useState('')
   const [maxPriceInput, setMaxPriceInput] = useState('')
@@ -902,6 +904,7 @@ export function DealsClient({
   function clearAll() {
     setTitleFilter('')
     setSelectedSearch('all')
+    setSelectedProvider('all')
     setSortBy('newest')
     setMinPriceInput('')
     setMaxPriceInput('')
@@ -913,6 +916,10 @@ export function DealsClient({
     const map = new Map<string, string>()
     rows.forEach((r) => map.set(r.searchId, r.searchName))
     return Array.from(map.entries()).map(([id, name]) => ({ id, name }))
+  }, [rows])
+
+  const uniqueProviders = useMemo(() => {
+    return Array.from(new Set(rows.map((r) => r.provider).filter(Boolean)))
   }, [rows])
 
   const filteredWithoutRecency = useMemo(() => {
@@ -929,6 +936,10 @@ export function DealsClient({
       result = result.filter((r) => r.searchId === selectedSearch)
     }
 
+    if (selectedProvider !== 'all') {
+      result = result.filter((r) => r.provider === selectedProvider)
+    }
+
     const floor = minPriceFilter ? Number(minPriceFilter) : null
     if (floor && floor > 0) {
       result = result.filter((r) => Number(r.price) >= floor)
@@ -940,7 +951,7 @@ export function DealsClient({
     }
 
     return result
-  }, [rows, titleFilter, selectedSearch, minPriceFilter, maxPriceFilter])
+  }, [rows, titleFilter, selectedSearch, selectedProvider, minPriceFilter, maxPriceFilter])
 
   const filtered = useMemo(() => {
     let result = [...filteredWithoutRecency]
@@ -970,6 +981,9 @@ export function DealsClient({
   if (selectedSearch !== 'all') {
     const name = uniqueSearches.find((s) => s.id === selectedSearch)?.name ?? selectedSearch
     chips.push({ label: `Search: ${name}`, onRemove: () => setSelectedSearch('all') })
+  }
+  if (selectedProvider !== 'all') {
+    chips.push({ label: `Provider: ${getProvider(selectedProvider).shortName}`, onRemove: () => setSelectedProvider('all') })
   }
   if (sortBy === 'cheapest') chips.push({ label: 'Cheapest first', onRemove: () => setSortBy('newest') })
   if (sortBy === 'dealScore') chips.push({ label: 'Best deals first', onRemove: () => setSortBy('newest') })
@@ -1011,6 +1025,15 @@ export function DealsClient({
             <option value="all">All searches</option>
             {uniqueSearches.map(({ id, name }) => (
               <option key={id} value={id}>{name}</option>
+            ))}
+          </FilterSelect>
+        )}
+
+        {uniqueProviders.length > 1 && (
+          <FilterSelect value={selectedProvider} onChange={setSelectedProvider} icon={Globe} label="Provider">
+            <option value="all">All providers</option>
+            {uniqueProviders.map((pid) => (
+              <option key={pid} value={pid}>{getProvider(pid).shortName}</option>
             ))}
           </FilterSelect>
         )}
