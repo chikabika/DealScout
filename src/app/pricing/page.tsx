@@ -86,7 +86,7 @@ function PlanCard({
 
 const comparisonRows = [
   { label: 'Saved searches',      free: '1 (lifetime)',  pro: '5',           dealer: '15' },
-  { label: 'Marketplaces',        free: 'Facebook only', pro: 'FB + CL',     dealer: 'FB + CL + Cars.com' },
+  { label: 'Marketplaces',        free: 'Facebook only', pro: 'FB + CL + Cars.com + CarGurus + OfferUp', dealer: 'All 5 providers' },
   { label: 'Polling frequency',   free: 'Every 12 hrs',  pro: 'Every 4 hrs', dealer: 'Every 2 hrs' },
   { label: 'Email alerts',        free: 'Daily digest',  pro: 'Instant',     dealer: 'Instant' },
   { label: 'AI deal scoring',     free: false,           pro: true,          dealer: true },
@@ -193,7 +193,7 @@ const FAQ = [
   },
   {
     q: 'Is CarDealAlerts affiliated with Facebook or Craigslist?',
-    a: 'No. CarDealAlerts is an independent tool and is not affiliated with, endorsed by, or partnered with Facebook, Craigslist, Cars.com, or any marketplace.',
+    a: 'No. CarDealAlerts is an independent tool and is not affiliated with, endorsed by, or partnered with Facebook, Craigslist, Cars.com, CarGurus, OfferUp, or any marketplace.',
   },
 ]
 
@@ -358,7 +358,7 @@ export default function PricingPage() {
                 <img src="/logo-dark.svg" alt="CarDealAlerts" className="h-8 w-auto" />
               </Link>
               <p className="text-xs leading-5 text-zinc-500">
-                CarDealAlerts is not affiliated with Facebook, Craigslist, Cars.com, OfferUp, AutoTrader, or any vehicle marketplace. All trademarks belong to their respective owners.
+                CarDealAlerts is not affiliated with Facebook, Craigslist, Cars.com, CarGurus, OfferUp, AutoTrader, or any vehicle marketplace. All trademarks belong to their respective owners.
               </p>
               <p className="text-xs text-zinc-500">
                 Support:{' '}
