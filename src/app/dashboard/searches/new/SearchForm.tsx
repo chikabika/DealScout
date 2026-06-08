@@ -39,7 +39,7 @@ const CAR_MAKES = [
 const formSchema = z
   .object({
     name: z.string().min(3, 'Name must be at least 3 characters').max(60, 'Name must be 60 characters or less'),
-    providers: z.array(z.string()).min(1, 'Select at least one provider'),
+    provider: z.string().min(1, 'Select a provider'),
     city: z.string().min(1, 'City is required'),
     state: z.string().min(1, 'State is required'),
     minPrice: z.preprocess(
@@ -150,7 +150,7 @@ export function SearchForm({
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema) as Resolver<FormValues>,
     defaultValues: {
-      providers: ['facebook'],
+      provider: 'facebook',
       maxPrice: 10000,
       frequencyMinutes: userPlan.pollingMinutes,
       zipCode: '',
@@ -179,7 +179,7 @@ export function SearchForm({
       const res = await fetch('/api/searches', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, providers: [data.provider] }),
       })
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
@@ -246,14 +246,14 @@ export function SearchForm({
                   Marketplaces <span className="text-red-400">*</span>
                 </label>
                 <Controller
-                  name="providers"
+                  name="provider"
                   control={control}
                   render={({ field }) => (
                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                       {PROVIDERS.map((provider) => {
                         const isAllowed = allowedProviders.includes(provider.id)
                         const isComingSoon = !provider.enabled
-                        const isSelected = field.value.includes(provider.id)
+                        const isSelected = field.value === provider.id
 
                         // Plan-locked: not allowed on current plan
                         if (!isAllowed) {
@@ -309,15 +309,9 @@ export function SearchForm({
                             ].join(' ')}
                           >
                             <input
-                              type="checkbox"
+                              type="radio"
                               checked={isSelected}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  field.onChange([...field.value, provider.id])
-                                } else {
-                                  field.onChange(field.value.filter((id) => id !== provider.id))
-                                }
-                              }}
+                              onChange={() => field.onChange(provider.id)}
                               className="sr-only"
                             />
                             <span className="text-xl">{provider.logo}</span>
@@ -326,9 +320,9 @@ export function SearchForm({
                             </span>
                             {isSelected && (
                               <span className="absolute right-2 top-2">
-                                <svg viewBox="0 0 16 16" fill="currentColor" className="h-3.5 w-3.5 text-emerald-400">
-                                  <path fillRule="evenodd" d="M12.416 3.376a.75.75 0 0 1 .208 1.04l-5 7.5a.75.75 0 0 1-1.154.114l-3-3a.75.75 0 0 1 1.06-1.06l2.353 2.353 4.493-6.74a.75.75 0 0 1 1.04-.207Z" clipRule="evenodd" />
-                                </svg>
+                                <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full border border-emerald-400">
+                                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                                </span>
                               </span>
                             )}
                           </label>
@@ -337,7 +331,7 @@ export function SearchForm({
                     </div>
                   )}
                 />
-                <FieldError message={errors.providers?.message} />
+                <FieldError message={errors.provider?.message} />
               </div>
 
               {/* ── Polling frequency (visible in Basics) ── */}
@@ -562,17 +556,17 @@ export function SearchForm({
               {values.name ? values.name : <span className="italic text-zinc-600">Search name…</span>}
             </h2>
 
-            {(values.providers?.length ?? 0) > 0 && (
+            {values.provider && (
               <div className="mt-3 flex flex-wrap gap-2">
-                {values.providers.map((id) => {
-                  const p = PROVIDERS.find((pr) => pr.id === id)
+                {(() => {
+                  const p = PROVIDERS.find((pr) => pr.id === values.provider)
                   if (!p) return null
                   return (
-                    <span key={id} className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-300">
+                    <span className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-300">
                       {p.logo} {p.name}
                     </span>
                   )
-                })}
+                })()}
               </div>
             )}
 
@@ -620,7 +614,7 @@ export function SearchForm({
               )}
             </div>
 
-            {values.providers?.includes('facebook') && (
+            {values.provider === 'facebook' && (
               <div className="mt-5">
                 <p className="mb-1.5 text-xs text-zinc-600">Facebook Marketplace URL</p>
                 <code className="block break-all rounded-lg bg-black/50 p-3 font-mono text-[11px] leading-relaxed text-zinc-400">
