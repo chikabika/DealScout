@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
+import { sendWelcomeEmail } from "@/lib/email";
 import { users } from "@/lib/schema";
 
 export async function POST(request: Request) {
@@ -57,6 +58,8 @@ export async function POST(request: Request) {
       email: users.email,
       name: users.name,
     });
+
+  await sendWelcomeEmail({ to: user.email, name: user.name }).catch(() => {});
 
   return NextResponse.json({ user }, { status: 201 });
 }
