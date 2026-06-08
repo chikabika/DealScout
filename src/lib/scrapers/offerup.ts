@@ -99,6 +99,7 @@ export async function runOfferUpScraper(
       },
       body: JSON.stringify({
         url: searchUrl,
+        waitFor: 3000,
         formats: [
           {
             type: 'json',
@@ -124,7 +125,7 @@ export async function runOfferUpScraper(
           },
         ],
       }),
-      signal: AbortSignal.timeout(60000),
+      signal: AbortSignal.timeout(120000),
     })
 
     if (!res.ok) {
