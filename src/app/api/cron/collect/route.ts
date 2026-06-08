@@ -9,6 +9,8 @@ import { runCollectionForSearch } from '@/lib/cron/collect-runner'
 
 export const maxDuration = 180
 
+const MANUAL_RUN_COOLDOWN_MS = 60 * 1000 // 60 seconds
+
 export async function GET(req: NextRequest) {
   const session = await auth()
   if (!session?.user?.id) {
@@ -30,6 +32,15 @@ export async function GET(req: NextRequest) {
 
   if (!row) {
     return NextResponse.json({ error: 'not found' }, { status: 404 })
+  }
+
+  const lastRun = row.search.lastRunAt
+  if (lastRun && Date.now() - new Date(lastRun).getTime() < MANUAL_RUN_COOLDOWN_MS) {
+    const secondsLeft = Math.ceil((MANUAL_RUN_COOLDOWN_MS - (Date.now() - new Date(lastRun).getTime())) / 1000)
+    return NextResponse.json(
+      { success: false, error: 'COOLDOWN', secondsLeft },
+      { status: 429 },
+    )
   }
 
   const result = await runCollectionForSearch(row.search, row.user)
