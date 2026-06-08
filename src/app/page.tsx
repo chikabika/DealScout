@@ -35,7 +35,7 @@ const features = [
   {
     icon: Radar,
     title: "Marketplace monitoring",
-    body: "Scan Facebook Marketplace and Craigslist on a schedule so you never have to manually refresh tabs.",
+    body: "Scan Facebook Marketplace, Craigslist, Cars.com, CarGurus, and OfferUp on a schedule so you never have to manually refresh tabs.",
   },
   {
     icon: Sparkles,
@@ -392,8 +392,8 @@ export default function Home() {
                 Start with the marketplaces buyers actually refresh.
               </h2>
               <p className="mt-4 leading-7 text-zinc-400">
-                CarDealAlerts currently monitors Facebook Marketplace for every user,
-                with Craigslist on paid plans and Cars.com on the Dealer plan. More sources are planned.
+                CarDealAlerts monitors Facebook Marketplace for every user. Pro and Dealer
+                plans add Craigslist, Cars.com, CarGurus, and OfferUp for broader coverage.
               </p>
               <p className="mt-4 rounded-lg border border-white/10 bg-zinc-900 px-4 py-3 text-xs leading-5 text-zinc-500">
                 CarDealAlerts is not affiliated with Facebook, Craigslist, Cars.com, CarGurus, OfferUp,
@@ -403,8 +403,8 @@ export default function Home() {
               <div className="mt-6 grid gap-3">
                 {[
                   ["Free", null, "Facebook Marketplace · Twice daily"],
-                  ["Pro", "$49/mo", "Facebook + Craigslist + Cars.com · Every 4 hours"],
-                  ["Dealer", "$149/mo", "Facebook + Craigslist + Cars.com · Every 2 hours"],
+                  ["Pro", "$49/mo", "Facebook + Craigslist + Cars.com + CarGurus + OfferUp · Every 4 hours"],
+                  ["Dealer", "$149/mo", "All 5 marketplaces · Every 2 hours"],
                 ].map(([plan, price, access]) => (
                   <div
                     key={plan}
@@ -678,9 +678,10 @@ export default function Home() {
           <TrendingUp className="text-emerald-300" />
           <h2 className="mt-5 text-2xl font-semibold text-white">Upgrade when speed matters.</h2>
           <p className="mt-4 leading-7 text-zinc-400">
-            Start free with basic monitoring. Pro adds Craigslist, every-4-hour
-            polling, instant alerts, and AI scoring. Dealer expands to Cars.com
-            with every-2-hour polling for high-volume sourcing.
+            Start free with basic monitoring. Pro adds Craigslist, Cars.com,
+            CarGurus, and OfferUp with every-4-hour polling, instant alerts,
+            and AI scoring. Dealer gets all 5 marketplaces with every-2-hour
+            polling.
           </p>
           <Link
             href="#pricing"

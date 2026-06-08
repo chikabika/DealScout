@@ -86,7 +86,7 @@ function PlanCard({
 
 const comparisonRows = [
   { label: 'Saved searches',      free: '1 (lifetime)',  pro: '5',           dealer: '15' },
-  { label: 'Marketplaces',        free: 'Facebook only', pro: 'FB + CL + Cars.com + CarGurus + OfferUp', dealer: 'All 5 providers' },
+  { label: 'Marketplaces',        free: 'Facebook only', pro: 'FB + CL + Cars.com + more', dealer: 'All 5 providers' },
   { label: 'Polling frequency',   free: 'Every 12 hrs',  pro: 'Every 4 hrs', dealer: 'Every 2 hrs' },
   { label: 'Email alerts',        free: 'Daily digest',  pro: 'Instant',     dealer: 'Instant' },
   { label: 'AI deal scoring',     free: false,           pro: true,          dealer: true },
