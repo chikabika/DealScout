@@ -2,6 +2,7 @@ import 'server-only'
 import crypto from 'crypto'
 import { eq, or } from 'drizzle-orm'
 import { getDb } from '@/lib/db'
+import { sendSubscriptionEmail } from '@/lib/email'
 import { users } from '@/lib/schema'
 import { mapStatusToPlan, mapVariantToPlan } from '@/lib/lemonsqueezy'
 
@@ -55,6 +56,13 @@ async function upsertUserPlan({
   }).where(where)
 
   console.log(`[LS WEBHOOK] upsertUserPlan — userId:${userId} email:${userEmail} variantId:${variantId} status:${status} → plan:${plan} rowCount:${result.rowCount}`)
+
+  if (plan === 'pro' || plan === 'dealer') {
+    const db2 = getDb()
+    const [u] = await db2.select({ name: users.name }).from(users).where(where).limit(1)
+    await sendSubscriptionEmail({ to: userEmail, name: u?.name ?? null, plan }).catch(() => {})
+  }
+
   return plan
 }
 

@@ -285,6 +285,183 @@ export async function sendDailyDigest(params: {
   console.log('[DIGEST] ✅ Sent to:', params.to, `(${params.totalNewListings} listings)`)
 }
 
+// ─── sendWelcomeEmail ─────────────────────────────────────────────────────────
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? process.env.NEXTAUTH_URL ?? 'https://dealscout.app'
+
+export async function sendWelcomeEmail(params: {
+  to: string
+  name: string | null
+}): Promise<void> {
+  const apiKey = process.env.BREVO_API_KEY
+  const senderEmail = process.env.SENDER_EMAIL
+  if (!apiKey || !senderEmail) {
+    console.warn('[email] BREVO_API_KEY or SENDER_EMAIL not set — skipping welcome email')
+    return
+  }
+
+  const firstName = params.name?.split(' ')[0] || 'there'
+
+  const htmlContent = `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#09090b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#09090b;">
+    <tr><td align="center" style="padding:32px 16px;">
+      <table cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;">
+
+        <tr><td style="background:#18181b;border-radius:12px 12px 0 0;padding:24px 28px;border-bottom:1px solid #27272a;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:24px;">🚗</span>
+            <span style="font-size:20px;font-weight:700;color:#fff;">DealScout</span>
+          </div>
+        </td></tr>
+
+        <tr><td style="background:#18181b;padding:24px 28px;">
+          <h1 style="font-size:20px;font-weight:600;color:#fff;margin:0 0 12px;">Welcome, ${escape(firstName)} 👋</h1>
+          <p style="font-size:14px;color:#a1a1aa;line-height:1.6;margin:0 0 20px;">
+            DealScout monitors car listings across the web for the searches you set up, scores each one with AI to flag genuine deals,
+            and sends you instant alerts the moment a great match appears — so you never miss out.
+          </p>
+
+          <table cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="padding-right:12px;">
+                <a href="${escape(APP_URL)}/dashboard"
+                   style="display:inline-block;background:#10b981;color:#fff;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;">
+                  Go to Dashboard →
+                </a>
+              </td>
+              <td>
+                <a href="${escape(APP_URL)}/pricing"
+                   style="display:inline-block;border:1px solid #10b981;color:#10b981;padding:9px 18px;border-radius:8px;font-size:14px;font-weight:500;text-decoration:none;">
+                  Upgrade to Pro
+                </a>
+              </td>
+            </tr>
+          </table>
+        </td></tr>
+
+        <tr><td style="background:#18181b;border-top:1px solid #27272a;padding:20px 28px;border-radius:0 0 12px 12px;">
+          <p style="font-size:11px;color:#52525b;margin:0;">
+            You're receiving this because you just created a DealScout account.
+          </p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'api-key': apiKey,
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify({
+      sender: { email: senderEmail, name: 'DealScout' },
+      to: [{ email: params.to, name: params.name ?? undefined }],
+      subject: 'Welcome to DealScout 🚗',
+      htmlContent,
+    }),
+  })
+
+  if (!res.ok) {
+    const errBody = await res.text().catch(() => '')
+    console.error('[email] Welcome email send failed:', res.status, errBody)
+  }
+}
+
+// ─── sendSubscriptionEmail ────────────────────────────────────────────────────
+
+export async function sendSubscriptionEmail(params: {
+  to: string
+  name: string | null
+  plan: 'pro' | 'dealer'
+}): Promise<void> {
+  const apiKey = process.env.BREVO_API_KEY
+  const senderEmail = process.env.SENDER_EMAIL
+  if (!apiKey || !senderEmail) {
+    console.warn('[email] BREVO_API_KEY or SENDER_EMAIL not set — skipping subscription email')
+    return
+  }
+
+  const firstName = params.name?.split(' ')[0] || 'there'
+  const planName = params.plan === 'pro' ? 'Pro' : 'Dealer'
+  const planPrice = params.plan === 'pro' ? '$49/mo' : '$149/mo'
+  const features = params.plan === 'pro'
+    ? ['5 searches', 'Facebook + Craigslist', 'Every 4h polling', 'Instant alerts', 'AI deal scoring']
+    : ['15 searches', 'All 3 providers', 'Every 2h polling', 'Instant alerts', 'AI deal scoring']
+
+  const featuresHtml = features
+    .map((f) => `<li style="font-size:14px;color:#e4e4e7;line-height:1.8;">${escape(f)}</li>`)
+    .join('')
+
+  const htmlContent = `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#09090b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#09090b;">
+    <tr><td align="center" style="padding:32px 16px;">
+      <table cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;">
+
+        <tr><td style="background:#18181b;border-radius:12px 12px 0 0;padding:24px 28px;border-bottom:1px solid #27272a;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:24px;">🚗</span>
+            <span style="font-size:20px;font-weight:700;color:#fff;">DealScout</span>
+          </div>
+        </td></tr>
+
+        <tr><td style="background:#18181b;padding:24px 28px;">
+          <h1 style="font-size:20px;font-weight:600;color:#fff;margin:0 0 12px;">Hi ${escape(firstName)},</h1>
+          <p style="font-size:14px;color:#a1a1aa;line-height:1.6;margin:0 0 16px;">
+            Your <strong style="color:#10b981;">DealScout ${escape(planName)}</strong> plan (${escape(planPrice)}) is now active. Here's what's included:
+          </p>
+
+          <ul style="margin:0 0 24px;padding-left:20px;">${featuresHtml}</ul>
+
+          <a href="${escape(APP_URL)}/dashboard/searches/new"
+             style="display:inline-block;background:#10b981;color:#fff;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;">
+            Create your first search →
+          </a>
+        </td></tr>
+
+        <tr><td style="background:#18181b;border-top:1px solid #27272a;padding:20px 28px;border-radius:0 0 12px 12px;">
+          <p style="font-size:11px;color:#52525b;margin:0;">
+            You're receiving this because you just subscribed to DealScout.
+          </p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'api-key': apiKey,
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify({
+      sender: { email: senderEmail, name: 'DealScout' },
+      to: [{ email: params.to, name: params.name ?? undefined }],
+      subject: `Your DealScout ${planName} plan is active ✅`,
+      htmlContent,
+    }),
+  })
+
+  if (!res.ok) {
+    const errBody = await res.text().catch(() => '')
+    console.error('[email] Subscription email send failed:', res.status, errBody)
+  }
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /** Escape HTML special chars to prevent injection from user-controlled strings. */
