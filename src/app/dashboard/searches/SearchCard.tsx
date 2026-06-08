@@ -34,7 +34,7 @@ export type SearchCardData = {
 
 // ─── Provider pill ────────────────────────────────────────────────────────────
 
-function ProviderPill({ providerId }: { providerId: string }) {
+export function ProviderPill({ providerId }: { providerId: string }) {
   const p = getProvider(providerId)
   return (
     <div
