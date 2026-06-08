@@ -84,6 +84,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'INVALID_FREQUENCY' }, { status: 403 })
     }
     updates.frequencyMinutes = data.frequencyMinutes
+    updates.nextRunAt = new Date(Date.now() + data.frequencyMinutes * 60 * 1000)
   }
 
   if (data.name !== undefined) updates.name = data.name

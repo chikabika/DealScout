@@ -55,9 +55,10 @@ export async function GET(req: NextRequest) {
       return { searchId: search.id, status: 'ran' as const, nextRunAt: nextRun }
     } catch (e) {
       console.error(`[SCHEDULER] Search ${search.id} failed:`, e instanceof Error ? e.message : e)
+      const freqMinutes = Math.max(search.frequencyMinutes, plan.pollingMinutes)
       await db
         .update(searches)
-        .set({ nextRunAt: new Date(Date.now() + 60 * 60 * 1000) })
+        .set({ nextRunAt: new Date(Date.now() + freqMinutes * 60 * 1000) })
         .where(eq(searches.id, search.id))
       return {
         searchId: search.id,

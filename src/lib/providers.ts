@@ -106,13 +106,26 @@ export const PROVIDERS: Provider[] = [
     urlBuilder: () => '',
   },
   {
+    id: 'cargurus',
+    name: 'CarGurus',
+    shortName: 'CarGurus',
+    logo: '🔍',
+    logoUrl: null,
+    brandColor: '#E8143C',
+    enabled: true,
+    supportedFilters: ['minPrice', 'maxPrice', 'minYear', 'maxMileage', 'make', 'model'],
+    urlBuilder: () => '',
+  },
+  {
     id: 'offerup',
     name: 'OfferUp',
     shortName: 'OfferUp',
     logo: '🛒',
     logoUrl: '/providers/offerup.svg',
     brandColor: '#00B47C',
-    enabled: false,
+    enabled: true,
+    // NOTE: OfferUp ignores location/radius URL params — results are based on
+    // the scraper's IP geolocation, so urlBuilder intentionally omits them.
     supportedFilters: ['city', 'state', 'maxPrice', 'keywords'],
     urlBuilder: () => '',
   },
