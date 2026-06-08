@@ -837,6 +837,80 @@ function FilterSelect({
   )
 }
 
+// ─── Provider multi-select dropdown ───────────────────────────────────────────
+
+function ProviderMultiSelect({
+  providerIds,
+  selected,
+  onChange,
+}: {
+  providerIds: string[]
+  selected: string[]
+  onChange: (ids: string[]) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', onClickOutside)
+    return () => document.removeEventListener('mousedown', onClickOutside)
+  }, [])
+
+  function toggle(id: string) {
+    if (selected.includes(id)) {
+      onChange(selected.filter((pid) => pid !== id))
+    } else {
+      onChange([...selected, id])
+    }
+  }
+
+  const label =
+    selected.length === 0
+      ? 'All providers'
+      : selected.length === 1
+        ? getProvider(selected[0]).shortName
+        : `${selected.length} providers`
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-label="Provider"
+        className="flex items-center gap-2 rounded-lg border border-white/10 bg-zinc-900 py-2 pl-8 pr-3 text-sm text-zinc-300 hover:border-white/20 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+      >
+        <Globe size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+        <span>{label}</span>
+      </button>
+      {open && (
+        <div className="absolute left-0 top-full z-20 mt-1.5 w-48 rounded-lg border border-white/10 bg-zinc-900 p-1.5 shadow-xl">
+          {providerIds.map((pid) => {
+            const p = getProvider(pid)
+            const isChecked = selected.includes(pid)
+            return (
+              <label
+                key={pid}
+                className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm text-zinc-300 transition-colors hover:bg-white/5"
+              >
+                <input
+                  type="checkbox"
+                  checked={isChecked}
+                  onChange={() => toggle(pid)}
+                  className="h-3.5 w-3.5 rounded border-white/20 bg-zinc-800 text-emerald-500 focus:ring-emerald-500"
+                />
+                <span>{p.shortName}</span>
+              </label>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Price input with $ prefix ────────────────────────────────────────────────
 
 function PriceInput({
@@ -879,7 +953,7 @@ export function DealsClient({
 }) {
   const [titleFilter, setTitleFilter] = useState('')
   const [selectedSearch, setSelectedSearch] = useState(initialSearch ?? 'all')
-  const [selectedProvider, setSelectedProvider] = useState<string>('all')
+  const [selectedProviders, setSelectedProviders] = useState<string[]>([])
   const [sortBy, setSortBy] = useState<SortKey>('newest')
   const [minPriceInput, setMinPriceInput] = useState('')
   const [maxPriceInput, setMaxPriceInput] = useState('')
@@ -904,7 +978,7 @@ export function DealsClient({
   function clearAll() {
     setTitleFilter('')
     setSelectedSearch('all')
-    setSelectedProvider('all')
+    setSelectedProviders([])
     setSortBy('newest')
     setMinPriceInput('')
     setMaxPriceInput('')
@@ -936,8 +1010,8 @@ export function DealsClient({
       result = result.filter((r) => r.searchId === selectedSearch)
     }
 
-    if (selectedProvider !== 'all') {
-      result = result.filter((r) => r.provider === selectedProvider)
+    if (selectedProviders.length > 0) {
+      result = result.filter((r) => selectedProviders.includes(r.provider))
     }
 
     const floor = minPriceFilter ? Number(minPriceFilter) : null
@@ -951,7 +1025,7 @@ export function DealsClient({
     }
 
     return result
-  }, [rows, titleFilter, selectedSearch, selectedProvider, minPriceFilter, maxPriceFilter])
+  }, [rows, titleFilter, selectedSearch, selectedProviders, minPriceFilter, maxPriceFilter])
 
   const filtered = useMemo(() => {
     let result = [...filteredWithoutRecency]
@@ -982,9 +1056,12 @@ export function DealsClient({
     const name = uniqueSearches.find((s) => s.id === selectedSearch)?.name ?? selectedSearch
     chips.push({ label: `Search: ${name}`, onRemove: () => setSelectedSearch('all') })
   }
-  if (selectedProvider !== 'all') {
-    chips.push({ label: `Provider: ${getProvider(selectedProvider).shortName}`, onRemove: () => setSelectedProvider('all') })
-  }
+  selectedProviders.forEach((pid) => {
+    chips.push({
+      label: `Provider: ${getProvider(pid).shortName}`,
+      onRemove: () => setSelectedProviders((prev) => prev.filter((id) => id !== pid)),
+    })
+  })
   if (sortBy === 'cheapest') chips.push({ label: 'Cheapest first', onRemove: () => setSortBy('newest') })
   if (sortBy === 'dealScore') chips.push({ label: 'Best deals first', onRemove: () => setSortBy('newest') })
   chips.push({ label: `Recency: ${RECENCY_CHIP_LABELS[recency]}`, onRemove: () => setRecency('24h') })
@@ -1030,12 +1107,7 @@ export function DealsClient({
         )}
 
         {uniqueProviders.length > 1 && (
-          <FilterSelect value={selectedProvider} onChange={setSelectedProvider} icon={Globe} label="Provider">
-            <option value="all">All providers</option>
-            {uniqueProviders.map((pid) => (
-              <option key={pid} value={pid}>{getProvider(pid).shortName}</option>
-            ))}
-          </FilterSelect>
+          <ProviderMultiSelect providerIds={uniqueProviders} selected={selectedProviders} onChange={setSelectedProviders} />
         )}
 
         {/* Recency */}
