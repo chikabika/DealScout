@@ -52,7 +52,7 @@ export default function TermsPage() {
               CarDealAlerts is an independent software product.
             </p>
             <p>
-              CarDealAlerts is not affiliated with, endorsed by, sponsored by, or officially connected to Facebook, Facebook Marketplace, Meta, Craigslist, Cars.com, OfferUp, AutoTrader, any vehicle marketplace, dealer, manufacturer, or seller.
+              CarDealAlerts is not affiliated with, endorsed by, sponsored by, or officially connected to Facebook, Facebook Marketplace, Meta, Craigslist, Cars.com, CarGurus, OfferUp, AutoTrader, any vehicle marketplace, dealer, manufacturer, or seller.
             </p>
             <p>
               All marketplace names, logos, and trademarks belong to their respective owners and are used only for descriptive purposes.

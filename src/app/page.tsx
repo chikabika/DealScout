@@ -84,17 +84,27 @@ const liveProviders = [
     plans: "Pro, Dealer",
     filters: "State, price, year, make, model",
   },
-];
-
-const plannedProviders = [
+  {
+    name: "CarGurus",
+    id: "cargurus",
+    logo: "🔍",
+    logoUrl: null,
+    brandColor: "#E8143C",
+    plans: "Pro, Dealer",
+    filters: "Price, year, mileage, make, model",
+  },
   {
     name: "OfferUp",
     id: "offerup",
     logo: "🛒",
     logoUrl: "/providers/offerup.svg",
-    brandColor: "#1BC98E",
-    filters: "City, state, price, keywords",
+    brandColor: "#00B47C",
+    plans: "Pro, Dealer",
+    filters: "Make, model, price",
   },
+];
+
+const plannedProviders = [
   {
     name: "AutoTrader",
     id: "autotrader",
@@ -116,7 +126,7 @@ const trustPoints = [
 const faqs = [
   {
     q: "What marketplaces does CarDealAlerts support?",
-    a: "Facebook Marketplace is available on all plans. Craigslist is available on Pro and Dealer plans. Cars.com dealer inventory is available on Pro and Dealer plans.",
+    a: "Facebook Marketplace is available on all plans. Craigslist, Cars.com, CarGurus, and OfferUp dealer and marketplace inventory are available on Pro and Dealer plans.",
   },
   {
     q: "How does AI deal scoring work?",
@@ -132,7 +142,7 @@ const faqs = [
   },
   {
     q: "Is CarDealAlerts affiliated with Facebook or Craigslist?",
-    a: "No. CarDealAlerts is an independent tool and is not affiliated with, endorsed by, or officially partnered with Facebook, Craigslist, Cars.com, OfferUp, AutoTrader, or any marketplace.",
+    a: "No. CarDealAlerts is an independent tool and is not affiliated with, endorsed by, or officially partnered with Facebook, Craigslist, Cars.com, CarGurus, OfferUp, AutoTrader, or any marketplace.",
   },
   {
     q: "Are AI price estimates guaranteed?",
@@ -302,7 +312,7 @@ export default function Home() {
             Never miss an underpriced used car again.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-zinc-300">
-            Get fast alerts when underpriced used cars appear on Facebook Marketplace, Craigslist, and Cars.com.
+            Get fast alerts when underpriced used cars appear on Facebook Marketplace, Craigslist, Cars.com, CarGurus, and OfferUp.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
@@ -386,7 +396,7 @@ export default function Home() {
                 with Craigslist on paid plans and Cars.com on the Dealer plan. More sources are planned.
               </p>
               <p className="mt-4 rounded-lg border border-white/10 bg-zinc-900 px-4 py-3 text-xs leading-5 text-zinc-500">
-                CarDealAlerts is not affiliated with Facebook, Craigslist, Cars.com, OfferUp,
+                CarDealAlerts is not affiliated with Facebook, Craigslist, Cars.com, CarGurus, OfferUp,
                 AutoTrader, or any listed marketplace. Logos are used as source identifiers only.
               </p>
 
@@ -738,7 +748,7 @@ export default function Home() {
                 <img src="/logo-dark.svg" alt="CarDealAlerts" className="h-8 w-auto" />
               </Link>
               <p className="text-xs leading-5 text-zinc-500">
-                CarDealAlerts is not affiliated with Facebook, Craigslist, Cars.com, OfferUp,
+                CarDealAlerts is not affiliated with Facebook, Craigslist, Cars.com, CarGurus, OfferUp,
                 AutoTrader, or any vehicle marketplace. All trademarks belong to their respective owners.
               </p>
               <p className="text-xs text-zinc-500">
