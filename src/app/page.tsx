@@ -88,7 +88,7 @@ const liveProviders = [
     name: "CarGurus",
     id: "cargurus",
     logo: "🔍",
-    logoUrl: null,
+    logoUrl: undefined,
     brandColor: "#E8143C",
     plans: "Pro, Dealer",
     filters: "Price, year, mileage, make, model",
