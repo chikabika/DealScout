@@ -43,7 +43,7 @@ export const PLANS = {
     popular: true,
     features: [
       '5 searches',
-      'Facebook + Craigslist + Cars.com + CarGurus + OfferUp',
+      'Facebook, Craigslist, Cars.com, CarGurus & OfferUp',
       'Every 4 hours polling',
       'Instant email alerts',
       'AI deal scoring',
@@ -68,7 +68,7 @@ export const PLANS = {
     aiModel: 'sonnet' as const,
     features: [
       '15 searches',
-      'Facebook + Craigslist + Cars.com + CarGurus + OfferUp',
+      'Facebook, Craigslist, Cars.com, CarGurus & OfferUp',
       'Every 2 hours polling',
       'Instant email alerts',
       'Advanced AI deal scoring',
