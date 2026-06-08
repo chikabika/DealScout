@@ -1,7 +1,7 @@
 import 'server-only'
 
 import { type NextRequest, NextResponse } from 'next/server'
-import { and, eq, isNotNull, lte } from 'drizzle-orm'
+import { and, asc, eq, isNotNull, lte } from 'drizzle-orm'
 import { getDb } from '@/lib/db'
 import { runCollectionForSearch } from '@/lib/cron/collect-runner'
 import { getPlan } from '@/lib/plans'
@@ -36,6 +36,7 @@ export async function GET(req: NextRequest) {
       isNotNull(searches.nextRunAt),
       lte(searches.nextRunAt, now),
     ))
+    .orderBy(asc(searches.nextRunAt))
     .limit(50)
 
   console.log(`[SCHEDULER] Found ${due.length} due searches`)
