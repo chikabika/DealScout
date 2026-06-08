@@ -10,6 +10,7 @@ import { listings, searches, users, type LastRunStats } from '@/lib/schema'
 import { PROVIDERS } from '@/lib/providers'
 import { getPlan } from '@/lib/plans'
 import { runCarsDotComScraper, type CarsDotComListing } from '@/lib/scrapers/carsdotcom'
+import { runCarGurusScraper, type CarGurusListing } from '@/lib/scrapers/cargurus'
 import { runCraigslistScraper, type CraigslistListing } from '@/lib/scrapers/craigslist'
 import { sendDealAlert } from '@/lib/email'
 
@@ -70,9 +71,10 @@ type RawProviderListing =
   | { provider: 'facebook'; listing: ApifyItem }
   | { provider: 'craigslist'; listing: CraigslistListing }
   | { provider: 'carsdotcom'; listing: CarsDotComListing }
+  | { provider: 'cargurus'; listing: CarGurusListing }
 
 type PipelineListing = {
-  provider: 'facebook' | 'craigslist' | 'carsdotcom'
+  provider: 'facebook' | 'craigslist' | 'carsdotcom' | 'cargurus'
   externalId: string
   title: string
   price: number
@@ -240,6 +242,26 @@ function normalizeToPipeline(raw: RawProviderListing, search: Search): PipelineL
     }
   }
 
+  if (raw.provider === 'cargurus') {
+    const item = raw.listing
+    return {
+      provider: 'cargurus',
+      externalId: item.externalId,
+      title: item.title,
+      price: item.price,
+      location: item.location,
+      url: item.url,
+      image: item.image,
+      description: item.description,
+      year: item.year,
+      make: item.make,
+      model: item.model,
+      mileage: item.mileage,
+      isSold: false,
+      isLive: true,
+    }
+  }
+
   console.log('[CRON] Unknown provider for search:', search.id)
   return null
 }
@@ -373,6 +395,26 @@ export async function runCollectionForSearch(search: Search, user: User): Promis
         if (!providersRun.includes(providerId)) providersRun.push(providerId)
         console.log('[CARSDOTCOM] Added', items.length, 'listings to pipeline')
       }
+
+      if (providerId === 'cargurus') {
+        const items = await runCarGurusScraper({
+          city: row.city,
+          state: row.state,
+          zipCode: row.zipCode ?? null,
+          radiusMiles: row.radiusMiles ?? 50,
+          minPrice: row.minPrice,
+          maxPrice: row.maxPrice,
+          minYear: row.minYear,
+          maxMileage: row.maxMileage,
+          make: row.make,
+          model: row.model,
+          keywords: row.keywords,
+        }, { maxItems: maxItems ?? 20 })
+        rawProviderListings.push(...items.map((listing) => ({ listing, provider: 'cargurus' as const })))
+        maxItemsRequested += 30
+        if (!providersRun.includes(providerId)) providersRun.push(providerId)
+        console.log('[CARGURUS] Added', items.length, 'listings to pipeline')
+      }
     } catch (err) {
       console.error(`[CRON] Error — provider: ${providerId}, search: ${row.id}`, err)
     }
@@ -421,8 +463,8 @@ export async function runCollectionForSearch(search: Search, user: User): Promis
   console.log('[FILTER] After strict price filter:', priced.length)
 
   const located = priced.filter((item) => {
-    // Cars.com: skip location filter — the search URL already uses ZIP + radius
-    if (item.provider === 'carsdotcom') return true
+    // Cars.com / CarGurus: skip location filter — the search URL already uses ZIP + radius
+    if (item.provider === 'carsdotcom' || item.provider === 'cargurus') return true
 
     // Facebook/Craigslist: private sellers, match city or state
     const loc = (item.location || '').toLowerCase()
