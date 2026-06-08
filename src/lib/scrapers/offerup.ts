@@ -30,12 +30,19 @@ export type OfferUpListing = {
 // have no effect. We accept this and still filter by price downstream.
 function buildOfferUpUrl(input: OfferUpInput): string {
   const params = new URLSearchParams()
-  const query = input.make
-    ? `${input.make}${input.model ? ` ${input.model}` : ''}`
-    : 'used car'
-  params.set('q', query)
   if (input.minPrice) params.set('price_min', String(input.minPrice))
   if (input.maxPrice) params.set('price_max', String(input.maxPrice))
+
+  const queryParts = [
+    input.make,
+    input.model,
+    input.keywords,
+  ].filter((v): v is string => !!v && v.trim().length > 0)
+
+  // Always need at least one search term — use 'car' as last resort
+  const q = queryParts.length > 0 ? queryParts.join(' ') : 'car'
+  params.set('q', q)
+
   return `https://offerup.com/search/?${params.toString()}`
 }
 
@@ -95,7 +102,7 @@ export async function runOfferUpScraper(
         formats: [
           {
             type: 'json',
-            prompt: 'Extract all vehicle listings for sale. For each listing return: title (include year if visible), price as a number (0 if not shown), location (city and state if visible), url to the listing detail page, and image_url of the main photo.',
+            prompt: 'Extract all vehicle or car listings shown on this page. For each listing return: title (include year if visible in the title), price as a number (skip listings with no price), location (city and state if shown, otherwise null), url to the item detail page (must start with https://offerup.com/item/detail/), and image_url of the main photo.',
             schema: {
               type: 'object',
               properties: {
@@ -139,6 +146,9 @@ export async function runOfferUpScraper(
 
     const rawListings = data.data?.json?.listings ?? []
     console.log('[OFFERUP] Firecrawl returned:', rawListings.length, 'listings')
+    if (rawListings.length === 0) {
+      console.warn('[OFFERUP] Zero listings — URL was:', searchUrl)
+    }
 
     const max = options.maxItems ?? 20
     return rawListings
