@@ -367,7 +367,7 @@ export async function runCollectionForSearch(search: Search, user: User): Promis
 
   console.log('[CRON] Running providers:', providersToRun)
 
-  const maxItems = plan.maxItemsPerRun
+  const maxItems = Math.max(1, plan.maxItemsPerRun ?? 10)
   const rawProviderListings: RawProviderListing[] = []
   let maxItemsRequested = 0
 
