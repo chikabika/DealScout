@@ -123,7 +123,9 @@ export const PROVIDERS: Provider[] = [
     logo: '🛒',
     logoUrl: '/providers/offerup.svg',
     brandColor: '#00B47C',
-    enabled: false,
+    enabled: true,
+    // NOTE: OfferUp ignores location/radius URL params — results are based on
+    // the scraper's IP geolocation, so urlBuilder intentionally omits them.
     supportedFilters: ['city', 'state', 'maxPrice', 'keywords'],
     urlBuilder: () => '',
   },
