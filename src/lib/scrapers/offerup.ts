@@ -130,8 +130,8 @@ export async function runOfferUpScraper(
 
     if (!res.ok) {
       const err = await res.text().catch(() => '')
-      console.error('[OFFERUP] Firecrawl error:', res.status, err.slice(0, 200))
-      return []
+      console.error('[OFFERUP] Firecrawl HTTP error:', res.status, res.statusText, err.slice(0, 300))
+      throw new Error(`Firecrawl HTTP ${res.status}: ${err.slice(0, 150)}`)
     }
 
     const data = await res.json().catch(() => null) as {
@@ -141,8 +141,8 @@ export async function runOfferUpScraper(
     } | null
 
     if (!data?.success) {
-      console.error('[OFFERUP] Firecrawl failed:', data?.error)
-      return []
+      console.error('[OFFERUP] Firecrawl success=false. Error:', JSON.stringify(data?.error), 'Full response keys:', Object.keys(data ?? {}))
+      throw new Error(`Firecrawl failed: ${JSON.stringify(data?.error)}`)
     }
 
     const rawListings = data.data?.json?.listings ?? []
@@ -181,8 +181,9 @@ export async function runOfferUpScraper(
         }
       })
   } catch (e) {
-    console.error('[OFFERUP] Fetch failed:', e instanceof Error ? e.message : e)
-    return []
+    const msg = e instanceof Error ? e.message : String(e)
+    console.error('[OFFERUP] Scraper failed:', msg)
+    throw e
   }
 }
 

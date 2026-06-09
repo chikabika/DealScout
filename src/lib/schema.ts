@@ -27,6 +27,8 @@ export type LastRunStats = {
   priceRangeUsed: { min: number; max: number }
   pricesReturned: number[]               // sorted prices from raw (pre-filter)
   locationsReturned: string[]            // unique locations from raw (pre-filter)
+  providerCounts: Record<string, number> // raw items returned per provider e.g. { facebook: 12, carsdotcom: 0 }
+  providerErrors: Record<string, string> // error message per provider if it failed e.g. { carsdotcom: 'Firecrawl HTTP 429' }
 }
 
 // ─── Tables ───────────────────────────────────────────────────────────────────

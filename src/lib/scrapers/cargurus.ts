@@ -213,8 +213,8 @@ export async function runCarGurusScraper(
 
     if (!res.ok) {
       const err = await res.text().catch(() => '')
-      console.error('[CARGURUS] Firecrawl error:', res.status, err.slice(0, 200))
-      return []
+      console.error('[CARGURUS] Firecrawl HTTP error:', res.status, res.statusText, err.slice(0, 300))
+      throw new Error(`Firecrawl HTTP ${res.status}: ${err.slice(0, 150)}`)
     }
 
     const data = await res.json().catch(() => null) as {
@@ -224,8 +224,8 @@ export async function runCarGurusScraper(
     } | null
 
     if (!data?.success) {
-      console.error('[CARGURUS] Firecrawl failed:', data?.error)
-      return []
+      console.error('[CARGURUS] Firecrawl success=false. Error:', JSON.stringify(data?.error), 'Full response keys:', Object.keys(data ?? {}))
+      throw new Error(`Firecrawl failed: ${JSON.stringify(data?.error)}`)
     }
 
     const rawListings = data.data?.json?.listings ?? []
@@ -259,8 +259,9 @@ export async function runCarGurusScraper(
         }
       })
   } catch (e) {
-    console.error('[CARGURUS] Fetch failed:', e instanceof Error ? e.message : e)
-    return []
+    const msg = e instanceof Error ? e.message : String(e)
+    console.error('[CARGURUS] Scraper failed:', msg)
+    throw e
   }
 }
 

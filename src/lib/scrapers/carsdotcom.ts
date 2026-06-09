@@ -214,8 +214,8 @@ export async function runCarsDotComScraper(
 
     if (!res.ok) {
       const err = await res.text().catch(() => '')
-      console.error('[CARSDOTCOM] Firecrawl error:', res.status, err.slice(0, 200))
-      return []
+      console.error('[CARSDOTCOM] Firecrawl HTTP error:', res.status, res.statusText, err.slice(0, 300))
+      throw new Error(`Firecrawl HTTP ${res.status}: ${err.slice(0, 150)}`)
     }
 
     const data = await res.json().catch(() => null) as {
@@ -225,12 +225,15 @@ export async function runCarsDotComScraper(
     } | null
 
     if (!data?.success) {
-      console.error('[CARSDOTCOM] Firecrawl failed:', data?.error)
-      return []
+      console.error('[CARSDOTCOM] Firecrawl success=false. Error:', JSON.stringify(data?.error), 'Full response keys:', Object.keys(data ?? {}))
+      throw new Error(`Firecrawl failed: ${JSON.stringify(data?.error)}`)
     }
 
     const rawListings = data.data?.json?.listings ?? []
     console.log('[CARSDOTCOM] Firecrawl returned:', rawListings.length, 'listings')
+    if (rawListings.length === 0) {
+      console.warn('[CARSDOTCOM] Zero listings extracted. URL:', searchUrl, '| data.data keys:', Object.keys(data?.data ?? {}))
+    }
 
     const max = options.maxItems ?? 20
     return rawListings
@@ -259,7 +262,8 @@ export async function runCarsDotComScraper(
         }
       })
   } catch (e) {
-    console.error('[CARSDOTCOM] Fetch failed:', e instanceof Error ? e.message : e)
-    return []
+    const msg = e instanceof Error ? e.message : String(e)
+    console.error('[CARSDOTCOM] Scraper failed:', msg)
+    throw e
   }
 }
