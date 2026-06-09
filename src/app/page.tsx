@@ -88,8 +88,8 @@ const liveProviders = [
     name: "CarGurus",
     id: "cargurus",
     logo: "🔍",
-    logoUrl: undefined,
-    brandColor: "#E8143C",
+    logoUrl: "/providers/cargurus.svg",
+    brandColor: "#001F5B",
     plans: "Pro, Dealer",
     filters: "Price, year, mileage, make, model",
   },
@@ -205,7 +205,7 @@ function ProviderLogo({
           alt={`${name} logo`}
           width={28}
           height={28}
-          className="h-7 w-7 rounded-md object-contain"
+          className="h-7 w-auto max-w-[2.8rem] rounded-sm object-contain"
           loading="lazy"
         />
       ) : (
