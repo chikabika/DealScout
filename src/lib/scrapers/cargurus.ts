@@ -181,6 +181,7 @@ export async function runCarGurusScraper(
       },
       body: JSON.stringify({
         url: searchUrl,
+        waitFor: 3000,
         formats: [
           {
             type: 'json',
@@ -208,7 +209,7 @@ export async function runCarGurusScraper(
           },
         ],
       }),
-      signal: AbortSignal.timeout(60000),
+      signal: AbortSignal.timeout(120000),
     })
 
     if (!res.ok) {
@@ -232,9 +233,9 @@ export async function runCarGurusScraper(
     console.log('[CARGURUS] Firecrawl returned:', rawListings.length, 'listings')
 
     const max = options.maxItems ?? 20
-    return rawListings
+
+    const mapped = rawListings
       .filter((listing) => stringOrNull(listing.url) && Number(listing.price) > 0)
-      .slice(0, max)
       .map((listing): CarGurusListing => {
         const title = stringOrNull(listing.title) ?? 'Untitled listing'
         const rawUrl = stringOrNull(listing.url) ?? ''
@@ -258,6 +259,24 @@ export async function runCarGurusScraper(
           provider: 'cargurus',
         }
       })
+
+    // Provider-side clamp — CarGurus LLM extraction ignores URL price/year/mileage filters.
+    // Year/mileage are null-tolerant: never drop a listing just because we couldn't parse them.
+    const clamped = mapped.filter((item) => {
+      if (input.minPrice && item.price < input.minPrice) return false
+      if (input.maxPrice && item.price > input.maxPrice) return false
+      if (input.minYear && item.year != null && item.year < input.minYear) return false
+      if (input.maxMileage && item.mileage != null && item.mileage > input.maxMileage) return false
+      return true
+    })
+
+    console.log(
+      `[CARGURUS] Clamp: ${clamped.length}/${mapped.length} kept ` +
+      `(price ${input.minPrice ?? 0}-${input.maxPrice}, ` +
+      `minYear ${input.minYear ?? '-'}, maxMileage ${input.maxMileage ?? '-'})`
+    )
+
+    return clamped.slice(0, max)
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e)
     console.error('[CARGURUS] Scraper failed:', msg)

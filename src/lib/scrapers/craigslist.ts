@@ -101,7 +101,10 @@ export async function runCraigslistScraper(
   options: { maxItems?: number } = {},
 ): Promise<CraigslistListing[]> {
   const searchUrl = buildCraigslistSearchUrl(input)
-  if (!searchUrl) return []
+  if (!searchUrl) {
+    console.warn(`[CRAIGSLIST] City not supported: "${input.city}" — no Craigslist subdomain mapping. Returning [].`)
+    return []
+  }
 
   const token = process.env.APIFY_TOKEN
   if (!token) {
@@ -137,9 +140,12 @@ export async function runCraigslistScraper(
   const datasetId = startJson.data.defaultDatasetId
   console.log('[CRAIGSLIST] Run started:', { runId, datasetId })
 
+  // Actor is launched with timeout=300 (5 min). Poll for up to 375s (75 attempts
+  // x 5s) so we always outlast the actor's own timeout instead of giving up early
+  // and reporting failure on a run that's about to succeed.
   let status = 'READY'
   let attempts = 0
-  while (!['SUCCEEDED', 'FAILED', 'TIMED-OUT', 'ABORTED'].includes(status) && attempts < 36) {
+  while (!['SUCCEEDED', 'FAILED', 'TIMED-OUT', 'ABORTED'].includes(status) && attempts < 75) {
     await new Promise((resolve) => setTimeout(resolve, 5000))
     const statusRes = await fetch(`https://api.apify.com/v2/actor-runs/${runId}?token=${token}`)
     const statusJson = await statusRes.json().catch(() => null) as { data?: { status?: string } } | null

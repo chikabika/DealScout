@@ -80,6 +80,18 @@ async function main() {
   console.log('  Craigslist Scraper — Isolation Test')
   console.log(separator('='))
 
+  // Poll-loop sanity check: the actor runs with timeout=300s, so our poll loop
+  // must wait longer than that or we'll report failure on a run that's about to succeed.
+  console.log('\n[Poll loop timing check]')
+  const ACTOR_TIMEOUT_S = 300
+  const POLL_ATTEMPTS = 75
+  const POLL_INTERVAL_S = 5
+  const maxPollS = POLL_ATTEMPTS * POLL_INTERVAL_S
+  console.log(`  actor timeout: ${ACTOR_TIMEOUT_S}s, poll budget: ${maxPollS}s`)
+  console.log(maxPollS > ACTOR_TIMEOUT_S
+    ? '  ✅ poll loop outlasts actor timeout'
+    : '  ❌ poll loop gives up before actor timeout')
+
   // Quick URL-builder smoke test before hitting the network
   console.log('\n[URL builder smoke test]')
   for (const city of ['Los Angeles', 'NYC', 'Chicago', 'Walla Walla']) {
@@ -107,15 +119,34 @@ async function main() {
     const start = Date.now()
     let results: Awaited<ReturnType<typeof scrapeCraigslist>>
 
+    const isUnmappedCityTest = test.label.startsWith('Unmapped city')
+    let sawUnmappedWarning = false
+    const originalWarn = console.warn
+    if (isUnmappedCityTest) {
+      console.warn = (...args: unknown[]) => {
+        if (String(args[0]).includes('City not supported')) sawUnmappedWarning = true
+        originalWarn(...args)
+      }
+    }
+
     try {
       results = await scrapeCraigslist(test.input, { maxItems: 5 })
     } catch (e) {
       console.error('  ❌ Unexpected throw (should never happen):', e)
       continue
+    } finally {
+      if (isUnmappedCityTest) console.warn = originalWarn
     }
 
     const elapsed = Date.now() - start
     console.log(`  Got ${results.length} results in ${elapsed}ms\n`)
+
+    if (isUnmappedCityTest) {
+      console.log(results.length === 0 ? '  ✅ returned []' : '  ❌ expected []')
+      console.log(sawUnmappedWarning
+        ? '  ✅ "City not supported" warning logged'
+        : '  ❌ missing unmapped-city warning')
+    }
 
     if (results.length === 0) {
       console.log('  (empty — expected for unmapped cities or no matching listings)')
