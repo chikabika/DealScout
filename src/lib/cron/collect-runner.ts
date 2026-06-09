@@ -309,6 +309,8 @@ export async function runCollectionForSearch(search: Search, user: User): Promis
   let totalNewListings = 0
   let lastStats: LastRunStats | null = null
   const providersRun: string[] = []
+  const providerCounts: Record<string, number> = {}
+  const providerErrors: Record<string, string> = {}
 
   const plan = getPlan(row.userPlan ?? 'free')
 
@@ -375,6 +377,7 @@ export async function runCollectionForSearch(search: Search, user: User): Promis
     try {
       if (providerId === 'facebook') {
         const items = await runFacebookScraper(row, maxItems)
+        providerCounts['facebook'] = items?.length ?? 0
         if (!items) continue
         rawProviderListings.push(...items.map((listing) => ({ listing, provider: 'facebook' as const })))
         maxItemsRequested += maxItems
@@ -393,6 +396,7 @@ export async function runCollectionForSearch(search: Search, user: User): Promis
           model: row.model,
           keywords: row.keywords,
         }, { maxItems: 15 })
+        providerCounts['craigslist'] = items.length
         rawProviderListings.push(...items.map((listing) => ({ listing, provider: 'craigslist' as const })))
         maxItemsRequested += 30
         if (!providersRun.includes(providerId)) providersRun.push(providerId)
@@ -412,6 +416,10 @@ export async function runCollectionForSearch(search: Search, user: User): Promis
           model: row.model,
           keywords: row.keywords,
         }, { maxItems: 30 })
+        providerCounts['carsdotcom'] = items.length
+        if (items.length === 0) {
+          console.warn('[CARSDOTCOM] Zero listings returned — URL may have failed or Firecrawl returned empty')
+        }
         rawProviderListings.push(...items.map((listing) => ({ listing, provider: 'carsdotcom' as const })))
         maxItemsRequested += 30
         if (!providersRun.includes(providerId)) providersRun.push(providerId)
@@ -432,6 +440,10 @@ export async function runCollectionForSearch(search: Search, user: User): Promis
           model: row.model,
           keywords: row.keywords,
         }, { maxItems: maxItems ?? 20 })
+        providerCounts['cargurus'] = items.length
+        if (items.length === 0) {
+          console.warn('[CARGURUS] Zero listings returned — URL may have failed or Firecrawl returned empty')
+        }
         rawProviderListings.push(...items.map((listing) => ({ listing, provider: 'cargurus' as const })))
         maxItemsRequested += 30
         if (!providersRun.includes(providerId)) providersRun.push(providerId)
@@ -450,12 +462,18 @@ export async function runCollectionForSearch(search: Search, user: User): Promis
           model: row.model,
           keywords: row.keywords,
         }, { maxItems: maxItems ?? 20 })
+        providerCounts['offerup'] = items.length
+        if (items.length === 0) {
+          console.warn('[OFFERUP] Zero listings returned — URL may have failed or Firecrawl returned empty')
+        }
         rawProviderListings.push(...items.map((listing) => ({ listing, provider: 'offerup' as const })))
         if (!providersRun.includes(providerId)) providersRun.push(providerId)
         console.log('[OFFERUP] Added', items.length, 'listings to pipeline')
       }
     } catch (err) {
-      console.error(`[CRON] Error — provider: ${providerId}, search: ${row.id}`, err)
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error(`[CRON] Error — provider: ${providerId}, search: ${row.id}`, msg)
+      providerErrors[providerId] = msg
     }
   }
 
@@ -477,7 +495,7 @@ export async function runCollectionForSearch(search: Search, user: User): Promis
     new Set(raw.map((item) => item.location).filter((location): location is string => !!location)),
   ).slice(0, 20)
 
-  const persistStats = async (partial: Omit<LastRunStats, 'ranAt' | 'maxItems' | 'apifyReturned' | 'afterSoldLive' | 'priceRangeUsed' | 'pricesReturned' | 'locationsReturned'>) => {
+  const persistStats = async (partial: Omit<LastRunStats, 'ranAt' | 'maxItems' | 'apifyReturned' | 'afterSoldLive' | 'priceRangeUsed' | 'pricesReturned' | 'locationsReturned' | 'providerCounts' | 'providerErrors'>) => {
     const stats: LastRunStats = {
       ranAt: new Date().toISOString(),
       maxItems: maxItemsRequested || maxItems,
@@ -486,6 +504,8 @@ export async function runCollectionForSearch(search: Search, user: User): Promis
       priceRangeUsed: { min: row.minPrice ?? 500, max: row.maxPrice },
       pricesReturned,
       locationsReturned,
+      providerCounts,
+      providerErrors,
       ...partial,
     }
     lastStats = stats
@@ -751,6 +771,7 @@ export async function runCollectionForSearch(search: Search, user: User): Promis
     console.log('[CRON] Net-new inserts:', inserted.length, '(duplicates skipped)')
   }
 
+  console.log('[PROVIDER SUMMARY]', JSON.stringify({ providerCounts, providerErrors }))
   await persistStats({
     afterPrice: priced.length,
     afterLocation: located.length,
