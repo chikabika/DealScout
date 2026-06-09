@@ -163,6 +163,20 @@ function LoginForm() {
             <div className="flex flex-1 items-center justify-center px-5 py-8 sm:px-8">
               <div className="w-full max-w-md">
 
+                {/* Logo */}
+                <div className="mb-8 flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500">
+                    <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" stroke="white" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                      <path d="M2 17l10 5 10-5" />
+                      <path d="M2 12l10 5 10-5" />
+                    </svg>
+                  </div>
+                  <span className="text-lg font-bold tracking-tight text-white">
+                    CarDeal<span className="text-emerald-400">Alerts</span>
+                  </span>
+                </div>
+
                 {/* Form card */}
                 <form
                   onSubmit={onSubmit}
