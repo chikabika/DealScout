@@ -102,7 +102,7 @@ export const PROVIDERS: Provider[] = [
     logoUrl: '/providers/carsdotcom.svg',
     brandColor: '#E1251B',
     enabled: true,
-    supportedFilters: ['minPrice', 'maxPrice', 'minYear', 'maxMileage', 'make', 'model'],
+    supportedFilters: ['city', 'state', 'minPrice', 'maxPrice', 'minYear', 'maxMileage', 'make', 'model', 'radius'],
     urlBuilder: () => '',
   },
   {
@@ -113,7 +113,7 @@ export const PROVIDERS: Provider[] = [
     logoUrl: null,
     brandColor: '#E8143C',
     enabled: true,
-    supportedFilters: ['minPrice', 'maxPrice', 'minYear', 'maxMileage', 'make', 'model'],
+    supportedFilters: ['city', 'state', 'minPrice', 'maxPrice', 'minYear', 'maxMileage', 'make', 'model', 'radius'],
     urlBuilder: () => '',
   },
   {
@@ -126,7 +126,8 @@ export const PROVIDERS: Provider[] = [
     enabled: true,
     // NOTE: OfferUp ignores location/radius URL params — results are based on
     // the scraper's IP geolocation, so urlBuilder intentionally omits them.
-    supportedFilters: ['city', 'state', 'maxPrice', 'keywords'],
+    // It also has no year/mileage support in the scraper.
+    supportedFilters: ['minPrice', 'maxPrice', 'make', 'model', 'keywords'],
     urlBuilder: () => '',
   },
   {

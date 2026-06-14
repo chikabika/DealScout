@@ -7,6 +7,7 @@ import { useForm, type Resolver } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Clock } from 'lucide-react'
+import { getProvider } from '@/lib/providers'
 import { PLANS, type PlanId } from '@/lib/plans'
 import { ProviderPill } from '../../SearchCard'
 import {
@@ -117,6 +118,9 @@ export function EditSearchForm({
     },
   })
 
+  const selectedProvider = getProvider(search.providers[0] ?? 'facebook')
+  const supports = (filter: string) => selectedProvider.supportedFilters.includes(filter as never)
+
   async function onSubmit(data: FormValues) {
     setServerError(null)
     try {
@@ -226,42 +230,52 @@ export function EditSearchForm({
             </div>
           </div>
 
+          {!supports('city') && (
+            <p className="mt-1 text-xs text-amber-500/80">
+              {selectedProvider.shortName} matches by region automatically — city/state are used only to label results, not to filter location.
+            </p>
+          )}
+
           <div className="mt-4 grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium mb-1.5 text-zinc-300">
-                ZIP Code
-                <span className="text-zinc-500 font-normal ml-1">(optional)</span>
-              </label>
-              <input
-                {...register('zipCode')}
-                placeholder="90001"
-                maxLength={5}
-                className={inputClass(!!errors.zipCode)}
-              />
-              <p className="text-xs text-zinc-500 mt-1">Used for Cars.com dealer search radius</p>
-              <FieldError message={errors.zipCode?.message} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1.5 text-zinc-300">
-                Search radius
-              </label>
-              <select
-                {...register('radiusMiles', { valueAsNumber: true })}
-                className={selectClass()}
-              >
-                <option value={10}>10 miles</option>
-                <option value={20}>20 miles</option>
-                <option value={30}>30 miles</option>
-                <option value={40}>40 miles</option>
-                <option value={50}>50 miles</option>
-                <option value={75}>75 miles</option>
-                <option value={100}>100 miles</option>
-                <option value={150}>150 miles</option>
-                <option value={200}>200 miles</option>
-                <option value={500}>500 miles (nationwide)</option>
-              </select>
-              <p className="text-xs text-zinc-500 mt-1">Applies to Cars.com dealer results</p>
-            </div>
+            {supports('radius') && (
+              <div>
+                <label className="block text-sm font-medium mb-1.5 text-zinc-300">
+                  ZIP Code
+                  <span className="text-zinc-500 font-normal ml-1">(optional)</span>
+                </label>
+                <input
+                  {...register('zipCode')}
+                  placeholder="90001"
+                  maxLength={5}
+                  className={inputClass(!!errors.zipCode)}
+                />
+                <p className="text-xs text-zinc-500 mt-1">Used for Cars.com dealer search radius</p>
+                <FieldError message={errors.zipCode?.message} />
+              </div>
+            )}
+            {supports('radius') && (
+              <div>
+                <label className="block text-sm font-medium mb-1.5 text-zinc-300">
+                  Search radius
+                </label>
+                <select
+                  {...register('radiusMiles', { valueAsNumber: true })}
+                  className={selectClass()}
+                >
+                  <option value={10}>10 miles</option>
+                  <option value={20}>20 miles</option>
+                  <option value={30}>30 miles</option>
+                  <option value={40}>40 miles</option>
+                  <option value={50}>50 miles</option>
+                  <option value={75}>75 miles</option>
+                  <option value={100}>100 miles</option>
+                  <option value={150}>150 miles</option>
+                  <option value={200}>200 miles</option>
+                  <option value={500}>500 miles (nationwide)</option>
+                </select>
+                <p className="text-xs text-zinc-500 mt-1">Applies to Cars.com dealer results</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -295,23 +309,29 @@ export function EditSearchForm({
               <p className="mt-2 text-xs text-zinc-600">Listings between these prices will be matched</p>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-zinc-300">
-                  Min Year <span className="text-zinc-600 font-normal">(optional)</span>
-                </label>
-                <input {...register('minYear', { valueAsNumber: true })} type="number" placeholder="2010" min={1900} max={2026} className={inputClass(!!errors.minYear)} />
-                <FieldError message={errors.minYear?.message} />
+            {(supports('minYear') || supports('maxMileage')) && (
+              <div className="grid gap-4 sm:grid-cols-2">
+                {supports('minYear') && (
+                  <div>
+                    <label className="mb-1.5 block text-sm font-medium text-zinc-300">
+                      Min Year <span className="text-zinc-600 font-normal">(optional)</span>
+                    </label>
+                    <input {...register('minYear', { valueAsNumber: true })} type="number" placeholder="2010" min={1900} max={2026} className={inputClass(!!errors.minYear)} />
+                    <FieldError message={errors.minYear?.message} />
+                  </div>
+                )}
+                {supports('maxMileage') && (
+                  <div>
+                    <label className="mb-1.5 block text-sm font-medium text-zinc-300">
+                      Max Mileage <span className="text-zinc-600 font-normal">(optional)</span>
+                    </label>
+                    <input {...register('maxMileage', { valueAsNumber: true })} type="number" placeholder="150000" min={1000} max={500000} className={inputClass(!!errors.maxMileage)} />
+                    <p className="mt-1 text-xs text-zinc-600">Excludes high-mileage cars from results</p>
+                    <FieldError message={errors.maxMileage?.message} />
+                  </div>
+                )}
               </div>
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-zinc-300">
-                  Max Mileage <span className="text-zinc-600 font-normal">(optional)</span>
-                </label>
-                <input {...register('maxMileage', { valueAsNumber: true })} type="number" placeholder="150000" min={1000} max={500000} className={inputClass(!!errors.maxMileage)} />
-                <p className="mt-1 text-xs text-zinc-600">Excludes high-mileage cars from results</p>
-                <FieldError message={errors.maxMileage?.message} />
-              </div>
-            </div>
+            )}
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
@@ -353,11 +373,13 @@ export function EditSearchForm({
 
           {showAdvanced && (
             <div className="space-y-4 px-6 pb-6 pt-2">
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-zinc-300">Keywords</label>
-                <input {...register('keywords')} placeholder="must-have words, comma-separated" className={inputClass()} />
-                <p className="mt-1 text-xs text-zinc-600">Only show listings that mention these words</p>
-              </div>
+              {supports('keywords') && (
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-zinc-300">Keywords</label>
+                  <input {...register('keywords')} placeholder="must-have words, comma-separated" className={inputClass()} />
+                  <p className="mt-1 text-xs text-zinc-600">Only show listings that mention these words</p>
+                </div>
+              )}
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-zinc-300">Blacklist</label>
                 <input {...register('blacklist')} placeholder="exclude these words: motorcycle, boat, parts" className={inputClass()} />
