@@ -49,7 +49,7 @@ export default function PrivacyPage() {
                 <li>Billing portal links</li>
               </ul>
               <p>
-                Payments are processed by Lemon Squeezy. We do not store full credit card numbers or complete payment card details on our servers.
+                Payments are processed by Dodo Payments. We do not store full credit card numbers or complete payment card details on our servers.
               </p>
             </Subsection>
 
@@ -107,10 +107,10 @@ export default function PrivacyPage() {
 
           <Section title="3. Payment Processing">
             <p>
-              Payments are handled by Lemon Squeezy, which acts as a payment provider and Merchant of Record for digital products. Lemon Squeezy may process personal and payment information to complete purchases, calculate taxes, issue invoices, manage subscriptions, and prevent fraud. Lemon Squeezy states that it handles payments, fraud, merchant fees, and sales tax as Merchant of Record.
+              Payments are handled by Dodo Payments, which acts as a payment provider and Merchant of Record for digital products and SaaS subscriptions. Dodo Payments may process personal and payment information to complete purchases, manage subscriptions, calculate and collect taxes, issue invoices, prevent fraud, handle refunds, and manage payment disputes.
             </p>
             <p>
-              Your use of Lemon Squeezy checkout may also be governed by Lemon Squeezy's own terms, buyer terms, and privacy policy.
+              Your use of Dodo Payments checkout may also be governed by Dodo Payments' own buyer terms, payment terms, and privacy policy.
             </p>
           </Section>
 

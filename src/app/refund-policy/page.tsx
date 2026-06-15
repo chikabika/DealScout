@@ -66,9 +66,9 @@ export default function RefundPolicyPage() {
             </ul>
           </Section>
 
-          <Section title="4. Lemon Squeezy">
+          <Section title="4. Dodo Payments">
             <p>
-              Payments are processed by Lemon Squeezy. Lemon Squeezy may also review or issue refunds according to its own risk, chargeback, and payment policies. Lemon Squeezy states that sellers can set their own refund policies, but Lemon Squeezy may issue refunds within 60 days to prevent chargebacks.
+              Payments are processed by Dodo Payments. Dodo Payments acts as Merchant of Record and may handle payment processing, taxes, invoices, refunds, disputes, fraud prevention, and billing-related support. Refunds may also be reviewed or processed according to Dodo Payments' own payment, risk, dispute, and chargeback policies.
             </p>
           </Section>
 

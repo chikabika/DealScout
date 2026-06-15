@@ -117,7 +117,7 @@ const plannedProviders = [
 
 const trustPoints = [
   "No manual refreshing — CarDealAlerts watches for you 24/7.",
-  "No dealership spam — only private seller and local listings.",
+  "Cleaner alerts — focused on relevant local vehicle listings.",
   "Easy saved searches — set your filters once and forget.",
   "Cancel anytime — no contracts, no commitment.",
   "AI estimates for faster decision-making on every listing.",
@@ -309,7 +309,7 @@ export default function Home() {
             Find local car deals before they vanish
           </div>
           <h1 className="mt-6 max-w-4xl text-5xl font-semibold tracking-tight text-white sm:text-6xl lg:text-7xl">
-            Never miss an underpriced used car again.
+            Get alerts when potential underpriced used cars appear.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-zinc-300">
             Get fast alerts when underpriced used cars appear on Facebook Marketplace, Craigslist, Cars.com, CarGurus, and OfferUp.
