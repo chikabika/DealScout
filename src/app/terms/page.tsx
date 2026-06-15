@@ -104,10 +104,10 @@ export default function TermsPage() {
               CarDealAlerts may offer free and paid subscription plans. Paid subscriptions provide access to additional features such as more saved searches, faster alerts, AI deal scoring, or dealer-focused tools.
             </p>
             <p>
-              Payments are processed securely by Lemon Squeezy, our payment provider and Merchant of Record. Lemon Squeezy may handle payment processing, tax calculation, invoices, fraud prevention, and related payment services. Lemon Squeezy describes itself as a Merchant of Record that handles payments, fraud, and sales tax for digital sales.
+              Payments are processed securely by Dodo Payments, our payment provider and Merchant of Record. Dodo Payments may handle payment processing, subscription billing, tax calculation and remittance, invoices, fraud prevention, refunds, disputes, and related payment services.
             </p>
             <p>
-              By purchasing a subscription, you also agree to Lemon Squeezy's applicable buyer terms and checkout policies.
+              By purchasing a subscription, you also agree to Dodo Payments' applicable buyer terms, checkout terms, and payment policies.
             </p>
           </Section>
 
