@@ -41,6 +41,10 @@ const formSchema = z
       (v) => (v === '' || v == null || (typeof v === 'number' && isNaN(v)) ? undefined : Number(v)),
       z.number().min(1900, 'Enter a valid year').max(2026, 'Enter a valid year').optional(),
     ),
+    maxYear: z.preprocess(
+      (v) => (v === '' || v == null || (typeof v === 'number' && isNaN(v)) ? undefined : Number(v)),
+      z.number().min(1900, 'Enter a valid year').max(2026, 'Enter a valid year').optional(),
+    ),
     maxMileage: z.preprocess(
       (v) => (v === '' || v == null || (typeof v === 'number' && isNaN(v)) ? undefined : Number(v)),
       z.number().min(1000, 'Enter a valid mileage').max(500000, 'Enter a valid mileage').optional(),
@@ -70,6 +74,7 @@ export type EditableSearch = {
   minPrice: number | null
   maxPrice: number
   minYear: number | null
+  maxYear: number | null
   maxMileage: number | null
   make: string | null
   model: string | null
@@ -107,6 +112,7 @@ export function EditSearchForm({
       minPrice: search.minPrice ?? undefined,
       maxPrice: search.maxPrice,
       minYear: search.minYear ?? undefined,
+      maxYear: search.maxYear ?? undefined,
       maxMileage: search.maxMileage ?? undefined,
       make: search.make ?? '',
       model: search.model ?? '',
@@ -309,7 +315,7 @@ export function EditSearchForm({
               <p className="mt-2 text-xs text-zinc-600">Listings between these prices will be matched</p>
             </div>
 
-            {(supports('minYear') || supports('maxMileage')) && (
+            {(supports('minYear') || supports('maxYear') || supports('maxMileage')) && (
               <div className="grid gap-4 sm:grid-cols-2">
                 {supports('minYear') && (
                   <div>
@@ -318,6 +324,15 @@ export function EditSearchForm({
                     </label>
                     <input {...register('minYear', { valueAsNumber: true })} type="number" placeholder="2010" min={1900} max={2026} className={inputClass(!!errors.minYear)} />
                     <FieldError message={errors.minYear?.message} />
+                  </div>
+                )}
+                {supports('maxYear') && (
+                  <div>
+                    <label className="mb-1.5 block text-sm font-medium text-zinc-300">
+                      Max Year <span className="text-zinc-600 font-normal">(optional)</span>
+                    </label>
+                    <input {...register('maxYear', { valueAsNumber: true })} type="number" placeholder="2024" min={1900} max={2026} className={inputClass(!!errors.maxYear)} />
+                    <FieldError message={errors.maxYear?.message} />
                   </div>
                 )}
                 {supports('maxMileage') && (

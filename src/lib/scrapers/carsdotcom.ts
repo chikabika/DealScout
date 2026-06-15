@@ -6,6 +6,7 @@ export type CarsDotComInput = {
   minPrice: number | null
   maxPrice: number
   minYear: number | null
+  maxYear: number | null
   maxMileage: number | null
   make: string | null
   model: string | null
@@ -113,9 +114,10 @@ function buildCarsUrl(input: CarsDotComInput): string {
   params.set('zip', zip)
   params.set('maximum_distance', String(radius))
   params.set('sort', 'best_match_desc')
-  if (input.maxPrice) params.set('price_max', String(input.maxPrice))
-  if (input.minPrice) params.set('price_min', String(input.minPrice))
+  if (input.maxPrice) params.set('list_price_max', String(input.maxPrice))
+  if (input.minPrice) params.set('list_price_min', String(input.minPrice))
   if (input.minYear) params.set('year_min', String(input.minYear))
+  if (input.maxYear) params.set('year_max', String(input.maxYear))
   if (input.maxMileage) params.set('mileage_max', String(input.maxMileage))
   if (input.make) params.set('makes[]', input.make.toLowerCase())
   if (input.model && input.make) {
@@ -183,6 +185,7 @@ export async function runCarsDotComScraper(
       },
       body: JSON.stringify({
         url: searchUrl,
+        waitFor: 3000,
         formats: [
           {
             type: 'json',
@@ -209,7 +212,7 @@ export async function runCarsDotComScraper(
           },
         ],
       }),
-      signal: AbortSignal.timeout(60000),
+      signal: AbortSignal.timeout(120000),
     })
 
     if (!res.ok) {
@@ -268,6 +271,7 @@ export async function runCarsDotComScraper(
       if (input.minPrice && item.price < input.minPrice) return false
       if (input.maxPrice && item.price > input.maxPrice) return false
       if (input.minYear && item.year != null && item.year < input.minYear) return false
+      if (input.maxYear && item.year != null && item.year > input.maxYear) return false
       if (input.maxMileage && item.mileage != null && item.mileage > input.maxMileage) return false
       return true
     })
@@ -275,7 +279,7 @@ export async function runCarsDotComScraper(
     console.log(
       `[CARSDOTCOM] Clamp: ${clamped.length}/${mapped.length} kept ` +
       `(price ${input.minPrice ?? 0}-${input.maxPrice}, ` +
-      `minYear ${input.minYear ?? '-'}, maxMileage ${input.maxMileage ?? '-'})`
+      `minYear ${input.minYear ?? '-'}, maxYear ${input.maxYear ?? '-'}, maxMileage ${input.maxMileage ?? '-'})`
     )
 
     return clamped.slice(0, max)

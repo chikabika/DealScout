@@ -9,7 +9,7 @@ async function main() {
       label: 'Tight price band — should drop out-of-range',
       input: {
         city: 'Houston', state: 'TX', zipCode: null, radiusMiles: 50,
-        minPrice: 500, maxPrice: 10000, minYear: null, maxMileage: null,
+        minPrice: 500, maxPrice: 10000, minYear: null, maxYear: null, maxMileage: null,
         make: null, model: null, keywords: null,
       },
     },
@@ -17,7 +17,7 @@ async function main() {
       label: 'Year + mileage band',
       input: {
         city: 'Los Angeles', state: 'CA', zipCode: '90001', radiusMiles: 50,
-        minPrice: 5000, maxPrice: 30000, minYear: 2015, maxMileage: 100000,
+        minPrice: 5000, maxPrice: 30000, minYear: 2015, maxYear: null, maxMileage: 100000,
         make: 'Honda', model: null, keywords: null,
       },
     },

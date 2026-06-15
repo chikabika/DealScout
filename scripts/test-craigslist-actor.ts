@@ -9,6 +9,7 @@ async function main() {
     minPrice: 500,
     maxPrice: 10000,
     minYear: 2005,
+    maxYear: null,
     maxMileage: null,
     make: 'Honda',
     model: null,

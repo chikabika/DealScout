@@ -6,6 +6,7 @@ export type CraigslistInput = {
   minPrice: number | null
   maxPrice: number
   minYear: number | null
+  maxYear: number | null
   maxMileage: number | null
   make: string | null
   model: string | null
@@ -165,7 +166,7 @@ export async function runCraigslistScraper(
   const items = await itemsRes.json().catch(() => []) as unknown[]
   console.log('[CRAIGSLIST] Apify returned:', items.length, 'items')
 
-  return items
+  const mapped = items
     .filter((item): item is Record<string, unknown> => {
       if (!item || typeof item !== 'object') return false
       const row = item as Record<string, unknown>
@@ -197,6 +198,23 @@ export async function runCraigslistScraper(
         provider: 'craigslist',
       }
     })
+
+  // Craigslist ignores min_auto_year — enforce year post-scrape.
+  // Null-tolerant: Craigslist titles often don't lead with the year, so a
+  // null year means "unknown", NOT "out of range" — keep those rather than
+  // drop real in-range inventory.
+  const clamped = mapped.filter((item) => {
+    if (input.minYear && item.year != null && item.year < input.minYear) return false
+    if (input.maxYear && item.year != null && item.year > input.maxYear) return false
+    return true
+  })
+
+  console.log(
+    `[CRAIGSLIST] Year clamp: ${clamped.length}/${mapped.length} kept ` +
+    `(minYear ${input.minYear ?? '-'}, maxYear ${input.maxYear ?? '-'})`
+  )
+
+  return clamped.slice(0, maxItems)
 }
 
 export const scrapeCraigslist = runCraigslistScraper

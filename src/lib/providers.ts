@@ -4,6 +4,7 @@ export type SearchFilters = {
   minPrice?: number | null
   maxPrice: number
   minYear?: number
+  maxYear?: number
   maxMileage?: number | null
   make?: string
   model?: string
@@ -25,6 +26,7 @@ export type Provider = {
     | 'minPrice'
     | 'maxPrice'
     | 'minYear'
+    | 'maxYear'
     | 'minMileage'
     | 'maxMileage'
     | 'make'
@@ -60,7 +62,7 @@ export const PROVIDERS: Provider[] = [
     logoUrl: '/providers/facebook.svg',
     brandColor: '#1877F2',
     enabled: true,
-    supportedFilters: ['city', 'minPrice', 'maxPrice', 'minYear', 'maxMileage', 'make', 'model', 'keywords'],
+    supportedFilters: ['city', 'minPrice', 'maxPrice', 'make', 'model', 'keywords'],
     urlBuilder: (f) => {
       const city = (f.city || '').toLowerCase().replace(/\s+/g, '')
 
@@ -91,7 +93,7 @@ export const PROVIDERS: Provider[] = [
     logoUrl: '/providers/craigslist.svg',
     brandColor: '#5C218A',
     enabled: true,
-    supportedFilters: ['city', 'state', 'maxPrice', 'minPrice', 'minYear', 'maxMileage', 'make', 'model', 'keywords'],
+    supportedFilters: ['city', 'state', 'maxPrice', 'minPrice', 'minYear', 'maxYear', 'maxMileage', 'make', 'model', 'keywords'],
     urlBuilder: () => '',
   },
   {
@@ -102,7 +104,7 @@ export const PROVIDERS: Provider[] = [
     logoUrl: '/providers/carsdotcom.svg',
     brandColor: '#E1251B',
     enabled: true,
-    supportedFilters: ['city', 'state', 'minPrice', 'maxPrice', 'minYear', 'maxMileage', 'make', 'model', 'radius'],
+    supportedFilters: ['city', 'minPrice', 'maxPrice', 'minYear', 'maxYear', 'maxMileage', 'make', 'model', 'radius'],
     urlBuilder: () => '',
   },
   {
@@ -113,7 +115,7 @@ export const PROVIDERS: Provider[] = [
     logoUrl: null,
     brandColor: '#E8143C',
     enabled: true,
-    supportedFilters: ['city', 'state', 'minPrice', 'maxPrice', 'minYear', 'maxMileage', 'make', 'model', 'radius'],
+    supportedFilters: ['city', 'radius', 'minPrice', 'maxPrice', 'minYear', 'maxMileage'],
     urlBuilder: () => '',
   },
   {
@@ -123,10 +125,12 @@ export const PROVIDERS: Provider[] = [
     logo: '🛒',
     logoUrl: '/providers/offerup.svg',
     brandColor: '#00B47C',
-    enabled: true,
-    // NOTE: OfferUp ignores location/radius URL params — results are based on
-    // the scraper's IP geolocation, so urlBuilder intentionally omits them.
-    // It also has no year/mileage support in the scraper.
+    enabled: false,
+    // DISABLED: OfferUp search URLs carry no location param (confirmed via
+    // /explore/k/... paths). Location derives from the scraper's IP, which
+    // geolocates unpredictably, so results don't match the user's city.
+    // Re-enable only if a city-targeted scraping path (e.g. city-pinned proxy)
+    // becomes available.
     supportedFilters: ['minPrice', 'maxPrice', 'make', 'model', 'keywords'],
     urlBuilder: () => '',
   },

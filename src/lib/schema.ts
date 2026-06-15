@@ -73,6 +73,7 @@ export const searches = pgTable("searches", {
   maxPrice: integer("max_price").notNull(),
   minPrice: integer("min_price"),
   minYear: integer("min_year"),
+  maxYear: integer("max_year"),
   make: text("make"),
   model: text("model"),
   maxMileage: integer("max_mileage"),

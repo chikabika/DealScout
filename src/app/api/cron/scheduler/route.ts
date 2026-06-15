@@ -41,32 +41,39 @@ export async function GET(req: NextRequest) {
 
   console.log(`[SCHEDULER] Found ${due.length} due searches`)
 
-  const results = await Promise.allSettled(due.map(async ({ search, user }) => {
-    const plan = getPlan(user.plan)
+  // Run due searches with limited concurrency + a short stagger between batches.
+  // All-at-once (the previous Promise.allSettled over the full list) caused
+  // Apify/Firecrawl rate-limit collisions → multiple searches returned 0 items
+  // ("Source empty"). CONCURRENCY=2 with a gap keeps us under provider limits.
+  const CONCURRENCY = 2
+  const BATCH_GAP_MS = 8000
 
+  const runOne = async ({ search, user }: typeof due[number]) => {
+    const plan = getPlan(user.plan)
     try {
       await runCollectionForSearch(search, user)
       const freqMinutes = Math.max(search.frequencyMinutes, plan.pollingMinutes)
       const nextRun = new Date(Date.now() + freqMinutes * 60 * 1000)
-      await db
-        .update(searches)
-        .set({ nextRunAt: nextRun, lastRunAt: new Date() })
-        .where(eq(searches.id, search.id))
+      await db.update(searches).set({ nextRunAt: nextRun, lastRunAt: new Date() }).where(eq(searches.id, search.id))
       return { searchId: search.id, status: 'ran' as const, nextRunAt: nextRun }
     } catch (e) {
       console.error(`[SCHEDULER] Search ${search.id} failed:`, e instanceof Error ? e.message : e)
       const freqMinutes = Math.max(search.frequencyMinutes, plan.pollingMinutes)
-      await db
-        .update(searches)
-        .set({ nextRunAt: new Date(Date.now() + freqMinutes * 60 * 1000) })
-        .where(eq(searches.id, search.id))
-      return {
-        searchId: search.id,
-        status: 'error' as const,
-        error: e instanceof Error ? e.message : 'unknown',
-      }
+      await db.update(searches).set({ nextRunAt: new Date(Date.now() + freqMinutes * 60 * 1000) }).where(eq(searches.id, search.id))
+      return { searchId: search.id, status: 'error' as const, error: e instanceof Error ? e.message : 'unknown' }
     }
-  }))
+  }
+
+  const results: PromiseSettledResult<Awaited<ReturnType<typeof runOne>>>[] = []
+  for (let i = 0; i < due.length; i += CONCURRENCY) {
+    const batch = due.slice(i, i + CONCURRENCY)
+    const batchResults = await Promise.allSettled(batch.map(runOne))
+    results.push(...batchResults)
+    console.log(`[SCHEDULER] Batch ${i / CONCURRENCY + 1} done (${i + batch.length}/${due.length})`)
+    if (i + CONCURRENCY < due.length) {
+      await new Promise((r) => setTimeout(r, BATCH_GAP_MS))
+    }
+  }
 
   const summary = {
     totalDue: due.length,

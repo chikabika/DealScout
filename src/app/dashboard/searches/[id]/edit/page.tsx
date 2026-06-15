@@ -68,6 +68,7 @@ export default async function EditSearchPage({
             minPrice: search.minPrice,
             maxPrice: search.maxPrice,
             minYear: search.minYear,
+            maxYear: search.maxYear,
             maxMileage: search.maxMileage,
             make: search.make,
             model: search.model,

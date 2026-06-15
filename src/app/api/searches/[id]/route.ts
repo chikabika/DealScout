@@ -1,38 +1,66 @@
-import { type NextRequest, NextResponse } from 'next/server'
-import { and, eq } from 'drizzle-orm'
+import { NextResponse } from 'next/server'
+import { eq, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { auth } from '@/lib/auth'
 import { getDb } from '@/lib/db'
 import { searches, users } from '@/lib/schema'
-import { getPlan } from '@/lib/plans'
+import { FREQUENCY_LABELS, getPlan } from '@/lib/plans'
+import { PROVIDERS } from '@/lib/providers'
 
-const editSearchSchema = z.object({
-  name: z.string().min(3).max(60).optional(),
-  city: z.string().min(1).optional(),
-  state: z.string().min(1).optional(),
+const createSearchSchema = z.object({
+  name: z.string().min(3).max(60),
+  providers: z.array(z.string()).min(1),
+  city: z.string().min(1),
+  state: z.string().min(1),
   minPrice: z.number().min(500).max(100000).optional(),
-  maxPrice: z.number().min(500).max(100000).optional(),
+  maxPrice: z.number().min(500).max(100000),
   minYear: z.number().min(1900).max(2026).optional(),
+  maxYear: z.number().min(1900).max(2026).optional(),
   maxMileage: z.number().min(1000).max(500000).optional(),
   make: z.string().optional(),
   model: z.string().optional(),
   keywords: z.string().optional(),
   blacklist: z.string().optional(),
   zipCode: z.string().regex(/^\d{5}$/).nullable().optional(),
-  radiusMiles: z.number().int().min(10).max(500).optional(),
-  frequencyMinutes: z.number().int().positive().optional(),
+  radiusMiles: z.number().int().min(10).max(500).default(50),
+  pollingFrequency: z.enum(['hourly', '30min', '15min']).default('hourly'),
+  frequencyMinutes: z.number().int().positive().default(240),
 })
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: Request) {
   const session = await auth()
   if (!session?.user?.id) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { id } = await params
+  const db = getDb()
+
+  // Fetch user plan
+  const [user] = await db
+    .select({ plan: users.plan })
+    .from(users)
+    .where(eq(users.id, session.user.id))
+    .limit(1)
+
+  const plan = getPlan(user?.plan ?? 'free')
+
+  // Enforce search count limit
+  const [{ count: currentCount }] = await db
+    .select({ count: sql<number>`cast(count(*) as int)` })
+    .from(searches)
+    .where(eq(searches.userId, session.user.id))
+
+  if (currentCount >= plan.maxSearches) {
+    return NextResponse.json(
+      {
+        error: 'SEARCH_LIMIT_REACHED',
+        message: `You've reached your ${plan.maxSearches} search limit on the ${plan.name} plan. Upgrade to add more.`,
+        currentPlan: plan.id,
+        limit: plan.maxSearches,
+      },
+      { status: 403 },
+    )
+  }
 
   let body: unknown
   try {
@@ -41,34 +69,7 @@ export async function PATCH(
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  if (!body || typeof body !== 'object') {
-    return NextResponse.json({ error: 'Validation failed' }, { status: 422 })
-  }
-
-  const payload = body as { active?: unknown } & Record<string, unknown>
-  const updates: Partial<typeof searches.$inferInsert> = {}
-  const db = getDb()
-
-  let plan: ReturnType<typeof getPlan> | null = null
-  async function getUserPlan() {
-    if (plan) return plan
-    const [user] = await db
-      .select({ plan: users.plan })
-      .from(users)
-      .where(eq(users.id, session!.user!.id))
-      .limit(1)
-    plan = getPlan(user?.plan ?? 'free')
-    return plan
-  }
-
-  if (typeof payload.active === 'boolean') {
-    updates.active = payload.active
-    if (payload.active) {
-      updates.nextRunAt = new Date(Date.now() + 60 * 1000)
-    }
-  }
-
-  const result = editSearchSchema.safeParse(payload)
+  const result = createSearchSchema.safeParse(body)
   if (!result.success) {
     return NextResponse.json(
       { error: 'Validation failed', details: result.error.flatten() },
@@ -78,37 +79,54 @@ export async function PATCH(
 
   const { data } = result
 
-  if (data.frequencyMinutes !== undefined) {
-    const userPlan = await getUserPlan()
-    if (data.frequencyMinutes < userPlan.pollingMinutes) {
-      return NextResponse.json({ error: 'INVALID_FREQUENCY' }, { status: 403 })
+  if (data.frequencyMinutes < plan.pollingMinutes) {
+    return NextResponse.json(
+      {
+        error: 'INVALID_FREQUENCY',
+        message: `${FREQUENCY_LABELS[data.frequencyMinutes] ?? `${data.frequencyMinutes} minutes`} is not available on your ${plan.name} plan.`,
+      },
+      { status: 403 },
+    )
+  }
+
+  // Enforce provider allowlist
+  for (const providerId of data.providers) {
+    if (!(plan.allowedProviders as readonly string[]).includes(providerId)) {
+      const providerName = PROVIDERS.find((p) => p.id === providerId)?.name ?? providerId
+      return NextResponse.json(
+        {
+          error: 'PROVIDER_NOT_ALLOWED',
+          message: `${providerName} is only available on Pro and Dealer plans.`,
+        },
+        { status: 403 },
+      )
     }
-    updates.frequencyMinutes = data.frequencyMinutes
-    updates.nextRunAt = new Date(Date.now() + data.frequencyMinutes * 60 * 1000)
   }
 
-  if (data.name !== undefined) updates.name = data.name
-  if (data.city !== undefined) updates.city = data.city
-  if (data.state !== undefined) updates.state = data.state
-  if (data.minPrice !== undefined) updates.minPrice = data.minPrice
-  if (data.maxPrice !== undefined) updates.maxPrice = data.maxPrice
-  if (data.minYear !== undefined) updates.minYear = data.minYear
-  if (data.maxMileage !== undefined) updates.maxMileage = data.maxMileage
-  if (data.make !== undefined) updates.make = data.make
-  if (data.model !== undefined) updates.model = data.model
-  if (data.keywords !== undefined) updates.keywords = data.keywords
-  if (data.blacklist !== undefined) updates.blacklist = data.blacklist
-  if (data.zipCode !== undefined) updates.zipCode = data.zipCode
-  if (data.radiusMiles !== undefined) updates.radiusMiles = data.radiusMiles
+  const firstRunAt = new Date(Date.now() + 2 * 60 * 1000)
 
-  if (Object.keys(updates).length === 0) {
-    return NextResponse.json({ error: 'No valid updates' }, { status: 422 })
-  }
+  await db.insert(searches).values({
+    userId: session.user.id,
+    name: data.name,
+    providers: data.providers,
+    city: data.city,
+    state: data.state,
+    minPrice: data.minPrice ?? null,
+    maxPrice: data.maxPrice,
+    minYear: data.minYear ?? null,
+    maxYear: data.maxYear ?? null,
+    maxMileage: data.maxMileage ?? null,
+    make: data.make ?? null,
+    model: data.model ?? null,
+    keywords: data.keywords ?? null,
+    blacklist: data.blacklist ?? null,
+    zipCode: data.zipCode ?? null,
+    radiusMiles: data.radiusMiles ?? 50,
+    pollingFrequency: data.pollingFrequency,
+    frequencyMinutes: data.frequencyMinutes,
+    nextRunAt: firstRunAt,
+    active: true,
+  })
 
-  await db
-    .update(searches)
-    .set(updates)
-    .where(and(eq(searches.id, id), eq(searches.userId, session.user.id)))
-
-  return NextResponse.json({ success: true })
+  return NextResponse.json({ success: true }, { status: 201 })
 }
