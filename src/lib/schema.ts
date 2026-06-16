@@ -47,10 +47,13 @@ export const users = pgTable("users", {
   paddleSubscriptionId: text("paddle_subscription_id"),
   paddleSubscriptionStatus: text("paddle_subscription_status"),
   paddlePriceId: text("paddle_price_id"),
-  lsCustomerId: text("ls_customer_id"),
-  lsSubscriptionId: text("ls_subscription_id"),
-  lsSubscriptionStatus: text("ls_subscription_status"),
-  lsVariantId: text("ls_variant_id"),
+  paymentProvider: text("payment_provider"),
+  providerCustomerId: text("provider_customer_id"),
+  providerSubscriptionId: text("provider_subscription_id"),
+  providerProductId: text("provider_product_id"),
+  providerPaymentId: text("provider_payment_id"),
+  subscriptionStatus: text("subscription_status"),
+  currentPeriodEnd: timestamp("current_period_end", { mode: "date" }),
   aiCallsThisMonth: integer("ai_calls_this_month").notNull().default(0),
   // Daily counter — resets at midnight UTC
   runsToday: integer('runs_today').notNull().default(0),
@@ -91,6 +94,12 @@ export const searches = pgTable("searches", {
   lastRunAt: timestamp("last_run_at", { mode: "date" }),
   lastRunStats: json("last_run_stats").$type<LastRunStats>(),
 });
+
+export const processedWebhookEvents = pgTable("processed_webhook_events", {
+  id: text("id").primaryKey(),
+  provider: text("provider").notNull(),
+  processedAt: timestamp("processed_at", { mode: "date" }).notNull().defaultNow(),
+})
 
 export const listings = pgTable("listings", {
   id: uuid("id").primaryKey().defaultRandom(),
