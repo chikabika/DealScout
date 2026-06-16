@@ -149,7 +149,7 @@ export default async function BillingPage({
       plan: users.plan,
       runsToday: users.runsToday,
       runsThisMonth: users.runsThisMonth,
-      lsSubscriptionStatus: users.lsSubscriptionStatus,
+      subscriptionStatus: users.subscriptionStatus,
     })
     .from(users)
     .where(eq(users.id, userId))
@@ -191,9 +191,9 @@ export default async function BillingPage({
               <ManageSubscriptionButton className="rounded-xl border border-white/10 px-6 py-2.5 text-sm font-medium text-zinc-300 transition-colors hover:border-white/20 hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-60" />
             )}
           </div>
-          {user?.lsSubscriptionStatus && (
+          {user?.subscriptionStatus && (
             <p className="mt-4 text-xs text-zinc-500">
-              Subscription status: <span className="text-zinc-300">{user.lsSubscriptionStatus}</span>
+              Subscription status: <span className="text-zinc-300">{user.subscriptionStatus}</span>
             </p>
           )}
         </div>

@@ -5,6 +5,7 @@ import { auth } from '@/lib/auth'
 import { getDb } from '@/lib/db'
 import { searches, users } from '@/lib/schema'
 import { FREQUENCY_LABELS, getPlan } from '@/lib/plans'
+import { effectivePlan } from '@/lib/dodo'
 import { PROVIDERS } from '@/lib/providers'
 
 const createSearchSchema = z.object({
@@ -35,14 +36,18 @@ export async function POST(req: Request) {
 
   const db = getDb()
 
-  // Fetch user plan
+  // Fetch user plan — apply cancellation grace-period logic at request time
   const [user] = await db
-    .select({ plan: users.plan })
+    .select({
+      plan: users.plan,
+      subscriptionStatus: users.subscriptionStatus,
+      currentPeriodEnd: users.currentPeriodEnd,
+    })
     .from(users)
     .where(eq(users.id, session.user.id))
     .limit(1)
 
-  const plan = getPlan(user?.plan ?? 'free')
+  const plan = getPlan(effectivePlan(user ?? { plan: 'free', subscriptionStatus: null, currentPeriodEnd: null }))
 
   // Enforce search count limit
   const [{ count: currentCount }] = await db

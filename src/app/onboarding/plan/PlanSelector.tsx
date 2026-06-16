@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Check, Zap, Building2, Gift } from 'lucide-react'
-import { openOverlayCheckout } from '@/lib/lemonsqueezy-overlay'
 
 type Props = {
   userName: string | null
@@ -96,16 +95,14 @@ export function PlanSelector({ userName }: Props) {
     }
 
     try {
-      const res = await fetch('/api/lemonsqueezy/checkout', {
+      const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ planId }),
       })
       const data = await res.json() as { url?: string; error?: string }
       if (!res.ok || !data.url) throw new Error(data.error ?? 'Checkout failed')
-      await openOverlayCheckout(data.url, () => {
-        router.push('/dashboard?upgraded=1')
-      })
+      router.push(data.url)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Unable to open checkout. Please try again.')
       setLoading(null)
@@ -177,7 +174,7 @@ export function PlanSelector({ userName }: Props) {
                   {isLoading
                     ? plan.id === 'free'
                       ? 'Redirecting...'
-                      : 'Opening checkout...'
+                      : 'Redirecting...'
                     : plan.cta}
                 </button>
               </div>
