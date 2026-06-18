@@ -1,3 +1,5 @@
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? process.env.NEXTAUTH_URL ?? 'https://dealscout.app'
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type ListingRow = {
@@ -74,12 +76,12 @@ export async function sendDealAlert(
 <body style="background:#09090b;font-family:system-ui,sans-serif;margin:0;padding:24px;">
   <div style="max-width:600px;margin:0 auto;">
     <div style="margin-bottom:24px;">
-      <span style="font-size:20px;font-weight:700;color:#ffffff;">CarDealAlerts</span>
+      <img src="${APP_URL}/logo-dark.svg" alt="DealScout" width="130" style="display:block;height:32px;width:auto;" />
     </div>
 
     <div style="background:#18181b;border-radius:12px;padding:24px;border:1px solid #27272a;">
       <h1 style="margin:0 0 8px;font-size:22px;color:#ffffff;">
-        🚗 ${count} new deal${count === 1 ? '' : 's'} found
+        ${count} new deal${count === 1 ? '' : 's'} found
       </h1>
       <p style="margin:0 0 20px;color:#a1a1aa;font-size:14px;">
         Search: <strong style="color:#e4e4e7;">${escape(searchName)}</strong>
@@ -116,7 +118,7 @@ export async function sendDealAlert(
     body: JSON.stringify({
       sender: { name: 'CarDealAlerts', email: senderEmail },
       to: [{ email: toEmail }],
-      subject: `🚗 ${count} new deal${count === 1 ? '' : 's'} found — ${searchName}`,
+      subject: `${count} new deal${count === 1 ? '' : 's'} found — ${searchName}`,
       htmlContent: html,
     }),
   })
@@ -144,7 +146,7 @@ export async function sendDailyDigest(params: {
   }
 
   const firstName = params.userName?.split(' ')[0] ?? 'there'
-  const subject = `🚗 ${params.totalNewListings} new deal${params.totalNewListings === 1 ? '' : 's'} found for you today`
+  const subject = `${params.totalNewListings} new deal${params.totalNewListings === 1 ? '' : 's'} found for you today`
 
   function esc(s: string | null | undefined): string {
     if (!s) return ''
@@ -167,7 +169,7 @@ export async function sendDailyDigest(params: {
               <td width="96" style="vertical-align:top;padding-right:12px;">
                 ${l.image
                   ? `<img src="${esc(l.image)}" width="96" height="72" style="display:block;border-radius:6px;object-fit:cover;width:96px;height:72px;" referrerpolicy="no-referrer" />`
-                  : `<div style="width:96px;height:72px;background:#27272a;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:24px;">🚗</div>`
+                  : `<div style="width:96px;height:72px;background:#27272a;border-radius:6px;"></div>`
                 }
               </td>
               <td style="vertical-align:top;">
@@ -215,11 +217,8 @@ export async function sendDailyDigest(params: {
       <table cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;">
 
         <tr><td style="background:#18181b;border-radius:12px 12px 0 0;padding:24px 28px;border-bottom:1px solid #27272a;">
-          <div style="display:flex;align-items:center;gap:10px;">
-            <span style="font-size:24px;">🚗</span>
-            <span style="font-size:20px;font-weight:700;color:#fff;">CarDealAlerts</span>
-          </div>
-          <div style="font-size:13px;color:#71717a;margin-top:4px;">Your daily car deal digest</div>
+          <img src="${APP_URL}/logo-dark.svg" alt="DealScout" width="130" style="display:block;height:32px;width:auto;" />
+          <div style="font-size:13px;color:#71717a;margin-top:8px;">Your daily car deal digest</div>
         </td></tr>
 
         <tr><td style="background:#18181b;padding:20px 28px 0;">
@@ -287,8 +286,6 @@ export async function sendDailyDigest(params: {
 
 // ─── sendWelcomeEmail ─────────────────────────────────────────────────────────
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? process.env.NEXTAUTH_URL ?? 'https://dealscout.app'
-
 export async function sendWelcomeEmail(params: {
   to: string
   name: string | null
@@ -311,10 +308,7 @@ export async function sendWelcomeEmail(params: {
       <table cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;">
 
         <tr><td style="background:#18181b;border-radius:12px 12px 0 0;padding:24px 28px;border-bottom:1px solid #27272a;">
-          <div style="display:flex;align-items:center;gap:10px;">
-            <span style="font-size:24px;">🚗</span>
-            <span style="font-size:20px;font-weight:700;color:#fff;">DealScout</span>
-          </div>
+          <img src="${APP_URL}/logo-dark.svg" alt="DealScout" width="130" style="display:block;height:32px;width:auto;" />
         </td></tr>
 
         <tr><td style="background:#18181b;padding:24px 28px;">
@@ -364,7 +358,7 @@ export async function sendWelcomeEmail(params: {
     body: JSON.stringify({
       sender: { email: senderEmail, name: 'DealScout' },
       to: [{ email: params.to, name: params.name ?? undefined }],
-      subject: 'Welcome to DealScout 🚗',
+      subject: 'Welcome to DealScout',
       htmlContent,
     }),
   })
@@ -409,10 +403,7 @@ export async function sendSubscriptionEmail(params: {
       <table cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;">
 
         <tr><td style="background:#18181b;border-radius:12px 12px 0 0;padding:24px 28px;border-bottom:1px solid #27272a;">
-          <div style="display:flex;align-items:center;gap:10px;">
-            <span style="font-size:24px;">🚗</span>
-            <span style="font-size:20px;font-weight:700;color:#fff;">DealScout</span>
-          </div>
+          <img src="${APP_URL}/logo-dark.svg" alt="DealScout" width="130" style="display:block;height:32px;width:auto;" />
         </td></tr>
 
         <tr><td style="background:#18181b;padding:24px 28px;">
@@ -451,7 +442,7 @@ export async function sendSubscriptionEmail(params: {
     body: JSON.stringify({
       sender: { email: senderEmail, name: 'DealScout' },
       to: [{ email: params.to, name: params.name ?? undefined }],
-      subject: `Your DealScout ${planName} plan is active ✅`,
+      subject: `Your DealScout ${planName} plan is active`,
       htmlContent,
     }),
   })

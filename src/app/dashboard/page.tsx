@@ -150,12 +150,29 @@ function getSearchStatus(
   return 'active'
 }
 
+function humanizeProviderError(providerErrors: Record<string, string> | undefined): string | null {
+  if (!providerErrors) return null
+  const entries = Object.entries(providerErrors)
+  if (entries.length === 0) return null
+  const [provider, raw] = entries[0]
+  const msg = (raw || '').toLowerCase()
+  let reason: string
+  if (msg.includes('402') || msg.includes('insufficient credits')) reason = 'out of credits'
+  else if (msg.includes('429') || msg.includes('rate limit')) reason = 'rate limited'
+  else if (msg.includes('timeout') || msg.includes('timed out') || msg.includes('aborted')) reason = 'timed out'
+  else if (msg.includes('401') || msg.includes('403') || msg.includes('unauthorized') || msg.includes('forbidden')) reason = 'auth failed'
+  else reason = 'scrape failed'
+  return `${provider}: ${reason}`
+}
+
 function activityResult(stats: LastRunStats | null): {
   label: string
-  color: 'emerald' | 'amber' | 'zinc'
+  color: 'emerald' | 'amber' | 'zinc' | 'red'
 } {
   if (!stats) return { label: 'No data', color: 'zinc' }
   if (stats.newlyInserted > 0) return { label: `+${stats.newlyInserted} new`, color: 'emerald' }
+  const errorLabel = humanizeProviderError(stats.providerErrors)
+  if (errorLabel) return { label: errorLabel, color: 'red' }
   if (stats.apifyReturned === 0) return { label: 'Source empty', color: 'amber' }
   return { label: '0 matches', color: 'amber' }
 }
@@ -560,6 +577,8 @@ export default async function DashboardPage({
                       ? 'bg-emerald-500/10 text-emerald-400'
                       : result.color === 'amber'
                       ? 'bg-amber-500/10 text-amber-400'
+                      : result.color === 'red'
+                      ? 'bg-red-500/10 text-red-400'
                       : 'bg-zinc-800 text-zinc-500'
 
                   return (

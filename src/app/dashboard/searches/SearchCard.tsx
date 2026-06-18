@@ -163,6 +163,23 @@ function FilterSummary({ search }: { search: SearchCardData }) {
 
 // ─── Run stats badge ──────────────────────────────────────────────────────────
 
+function describeProviderError(
+  providerErrors: Record<string, string> | undefined,
+): { label: string; detail: string } | null {
+  if (!providerErrors) return null
+  const entries = Object.entries(providerErrors)
+  if (entries.length === 0) return null
+  const [provider, raw] = entries[0]
+  const msg = (raw || '').toLowerCase()
+  let reason: string
+  if (msg.includes('402') || msg.includes('insufficient credits')) reason = 'out of credits'
+  else if (msg.includes('429') || msg.includes('rate limit')) reason = 'rate limited'
+  else if (msg.includes('timeout') || msg.includes('timed out') || msg.includes('aborted')) reason = 'timed out'
+  else if (msg.includes('401') || msg.includes('403') || msg.includes('unauthorized') || msg.includes('forbidden')) reason = 'auth failed'
+  else reason = 'scrape failed'
+  return { label: `${provider}: ${reason}`, detail: raw }
+}
+
 function RunStatsBadge({
   lastRunAt,
   lastRunStats,
@@ -174,30 +191,38 @@ function RunStatsBadge({
 }) {
   if (!lastRunStats) return null
 
-  const { newlyInserted, apifyReturned, afterClassifier } = lastRunStats
+  const { newlyInserted, apifyReturned, afterClassifier, providerErrors } = lastRunStats
 
   const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
   const timeAgo = lastRunAt
     ? rtf.format(Math.round((lastRunAt - nowMs) / 60000), 'minute')
     : null
 
-  // Determine health: was the run productive, empty-by-filtering, or empty-by-source?
+  // A provider-level error (Firecrawl 402 out of credits, rate limit, timeout, …)
+  // is the real reason a run came back empty — surface it before "Source empty".
+  const providerError = describeProviderError(providerErrors)
+
   const isHealthy = newlyInserted > 0
   const isFiltered = apifyReturned > 0 && afterClassifier === 0
   const isSourceEmpty = apifyReturned === 0
 
-  const pill = isHealthy
+  const pill: { bg: string; text: string; icon: React.ReactNode; label: string; title?: string } = isHealthy
     ? { bg: 'bg-emerald-500/10', text: 'text-emerald-400', icon: <CheckCircle2 size={11} />, label: `+${newlyInserted} new` }
-    : isSourceEmpty
-      ? { bg: 'bg-zinc-800', text: 'text-zinc-500', icon: null, label: 'Source empty' }
-      : isFiltered
-        ? { bg: 'bg-amber-500/10', text: 'text-amber-400', icon: <XCircle size={11} />, label: 'Filtered out' }
-        : { bg: 'bg-zinc-800', text: 'text-zinc-500', icon: null, label: 'No new deals' }
+    : providerError
+      ? { bg: 'bg-red-500/10', text: 'text-red-400', icon: <XCircle size={11} />, label: providerError.label, title: providerError.detail }
+      : isSourceEmpty
+        ? { bg: 'bg-zinc-800', text: 'text-zinc-500', icon: null, label: 'Source empty' }
+        : isFiltered
+          ? { bg: 'bg-amber-500/10', text: 'text-amber-400', icon: <XCircle size={11} />, label: 'Filtered out' }
+          : { bg: 'bg-zinc-800', text: 'text-zinc-500', icon: null, label: 'No new deals' }
 
   return (
     <div className="mt-2 flex items-center gap-2 text-xs">
       {timeAgo && <span className="text-zinc-600">Last run {timeAgo}</span>}
-      <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-medium ${pill.bg} ${pill.text}`}>
+      <span
+        title={pill.title}
+        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-medium ${pill.bg} ${pill.text}`}
+      >
         {pill.icon}
         {pill.label}
       </span>

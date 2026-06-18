@@ -29,8 +29,15 @@ export async function POST(req: Request) {
       'webhook-signature': webhookSig,
       'webhook-timestamp': webhookTs,
     })
-  } catch {
-    console.warn('[DODO WEBHOOK] Invalid signature')
+  } catch (err) {
+    console.error('[DODO WEBHOOK] signature verification failed', {
+      message: err instanceof Error ? err.message : String(err),
+      secretPrefix: secret.slice(0, 6),   // expect "whsec_"
+      secretLen: secret.length,
+      hasId: Boolean(webhookId),
+      hasSig: Boolean(webhookSig),
+      hasTs: Boolean(webhookTs),
+    })
     return Response.json({ error: 'invalid signature' }, { status: 401 })
   }
 
@@ -80,6 +87,11 @@ export async function POST(req: Request) {
     }
   } catch (err) {
     console.error(`[DODO WEBHOOK] processing error for ${type}:`, err)
+    if (webhookId) {
+      await db.delete(processedWebhookEvents)
+        .where(eq(processedWebhookEvents.id, webhookId))
+        .catch(() => {})
+    }
     return Response.json({ error: 'processing failed' }, { status: 500 })
   }
 
@@ -104,7 +116,7 @@ async function handleSubscriptionActive(sub: WebhookPayload.Subscription) {
       )
 
   const db = getDb()
-  await db.update(users).set({
+  const updated = await db.update(users).set({
     plan,
     paymentProvider: 'dodo',
     providerCustomerId: customerId,
@@ -112,7 +124,10 @@ async function handleSubscriptionActive(sub: WebhookPayload.Subscription) {
     providerProductId: productId,
     subscriptionStatus: 'active',
     currentPeriodEnd: periodEnd,
-  }).where(where!)
+  }).where(where!).returning({ id: users.id })
+  if (updated.length === 0) {
+    console.error(`[DODO WEBHOOK] subscription.active matched NO user — userId:${userId} sub:${subscriptionId} cust:${customerId}. Plan NOT upgraded — check metadata.userId propagation.`)
+  }
 
   console.log(`[DODO WEBHOOK] subscription active — userId:${userId} plan:${plan}`)
 
