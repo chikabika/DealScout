@@ -166,7 +166,7 @@ export default function RegisterPage() {
                 <div className="flex flex-wrap gap-2">
                   {[
                     { emoji: "🚗", text: "50,000+ listings scanned daily" },
-                    { emoji: "⚡", text: "Alerts in under 5 minutes" },
+                    { emoji: "⚡", text: "Scheduled marketplace scans based on your plan" },
                     { emoji: "🔥", text: "AI-scored deals" },
                   ].map((chip) => (
                     <div

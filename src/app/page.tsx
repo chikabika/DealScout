@@ -309,24 +309,24 @@ export default function Home() {
             Find local car deals before they vanish
           </div>
           <h1 className="mt-6 max-w-4xl text-5xl font-semibold tracking-tight text-white sm:text-6xl lg:text-7xl">
-            Get alerts when potential underpriced used cars appear.
+            Find underpriced used-car inventory before other buyers and dealers do.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-zinc-300">
-            Get fast alerts when underpriced used cars appear on Facebook Marketplace, Craigslist, Cars.com, CarGurus, and OfferUp.
+            CarDealAlerts monitors multiple marketplaces and sends alerts when potential underpriced used-car listings match your saved searches — across Facebook Marketplace, Craigslist, Cars.com, CarGurus, and OfferUp.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
-              href="/register"
+              href="/free-sample-alerts"
               className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-emerald-400 px-6 text-sm font-semibold text-zinc-950 transition hover:bg-emerald-300"
             >
-              Start free
+              Get Free Sample Alerts
               <ArrowRight size={18} />
             </Link>
             <a
-              href="#example-alert"
+              href="#pricing"
               className="inline-flex h-12 items-center justify-center rounded-lg border border-white/15 px-6 text-sm font-semibold text-white transition hover:bg-white/10"
             >
-              See Example Alert
+              View Pricing
             </a>
           </div>
           <div className="mt-8 grid gap-3 text-sm text-zinc-400 sm:grid-cols-3">
@@ -527,6 +527,75 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── Dealer section ── */}
+      <section className="border-t border-white/10 bg-zinc-950 py-20">
+        <div className="mx-auto max-w-7xl px-5 sm:px-6">
+          <div className="grid gap-12 lg:grid-cols-[1fr_1fr] lg:items-start">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-300">Who it&apos;s for</p>
+              <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+                For small dealers, flippers, and inventory buyers
+              </h2>
+              <p className="mt-4 leading-7 text-zinc-400">
+                CarDealAlerts helps you monitor local marketplaces for vehicles that may be priced below market. Instead of manually checking multiple sites every day, you can create saved searches and receive alerts when matching opportunities appear.
+              </p>
+              <Link
+                href="/free-sample-alerts"
+                className="mt-8 inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-emerald-400 px-6 text-sm font-semibold text-zinc-950 transition hover:bg-emerald-300"
+              >
+                Request Free Sample Alerts
+                <ArrowRight size={18} />
+              </Link>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {[
+                "Independent used-car dealers",
+                "Car flippers",
+                "Buy-here-pay-here dealers",
+                "Export buyers",
+                "Rebuilders and mechanics",
+                "Serious personal buyers looking for a specific vehicle",
+              ].map((item) => (
+                <div key={item} className="flex items-start gap-3 rounded-xl border border-white/10 bg-zinc-900 px-4 py-3 text-sm text-zinc-300">
+                  <Check size={16} className="mt-0.5 shrink-0 text-emerald-300" />
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Example searches ── */}
+      <section className="border-t border-white/10 bg-zinc-900/40 py-20">
+        <div className="mx-auto max-w-7xl px-5 sm:px-6">
+          <div className="mb-10 max-w-2xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-300">Example searches</p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+              Example searches you can create
+            </h2>
+            <p className="mt-4 text-zinc-400">
+              Use saved searches to monitor the vehicles, price ranges, and locations that matter to your business.
+            </p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              "Toyota Tacoma under $25,000 within 100 miles",
+              "Honda Civic under $12,000 with clean-title keywords",
+              "Ford F-150 under market price in Dallas",
+              "Cars under $10,000 posted today",
+              "Dealer inventory opportunities near Charlotte",
+              "SUVs under $20,000 within 75 miles",
+            ].map((example) => (
+              <div key={example} className="flex items-start gap-3 rounded-xl border border-white/10 bg-zinc-900 p-5">
+                <Search size={16} className="mt-0.5 shrink-0 text-emerald-300" />
+                <p className="text-sm text-zinc-300">{example}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── Pricing ── */}
       <section id="pricing" className="border-t border-white/10 bg-zinc-900/40 py-20">
         <div className="mx-auto max-w-7xl px-5 sm:px-6">
@@ -536,6 +605,12 @@ export default function Home() {
               Simple, transparent pricing
             </h2>
             <p className="mt-4 text-zinc-400">Start free. Upgrade when you need more speed and sources.</p>
+            <p className="mt-3 text-sm text-zinc-500">
+              Not ready to subscribe?{" "}
+              <Link href="/free-sample-alerts" className="text-emerald-400 hover:underline">
+                Request 3 free sample alerts first.
+              </Link>
+            </p>
           </div>
 
           <div className="grid gap-6 sm:grid-cols-3">
