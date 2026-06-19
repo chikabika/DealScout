@@ -1,4 +1,5 @@
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? process.env.NEXTAUTH_URL ?? 'https://dealscout.app'
+const LOGO_URL = `${APP_URL}/logo-email.png`
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -76,7 +77,7 @@ export async function sendDealAlert(
 <body style="background:#09090b;font-family:system-ui,sans-serif;margin:0;padding:24px;">
   <div style="max-width:600px;margin:0 auto;">
     <div style="margin-bottom:24px;">
-      <img src="${APP_URL}/logo-dark.svg" alt="DealScout" width="130" style="display:block;height:32px;width:auto;" />
+      <img src="${LOGO_URL}" alt="CarDealAlerts" height="32" style="height:32px;width:auto;display:block;border:0;" />
     </div>
 
     <div style="background:#18181b;border-radius:12px;padding:24px;border:1px solid #27272a;">
@@ -217,7 +218,7 @@ export async function sendDailyDigest(params: {
       <table cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;">
 
         <tr><td style="background:#18181b;border-radius:12px 12px 0 0;padding:24px 28px;border-bottom:1px solid #27272a;">
-          <img src="${APP_URL}/logo-dark.svg" alt="DealScout" width="130" style="display:block;height:32px;width:auto;" />
+          <img src="${LOGO_URL}" alt="CarDealAlerts" height="32" style="height:32px;width:auto;display:block;border:0;" />
           <div style="font-size:13px;color:#71717a;margin-top:8px;">Your daily car deal digest</div>
         </td></tr>
 
@@ -308,7 +309,7 @@ export async function sendWelcomeEmail(params: {
       <table cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;">
 
         <tr><td style="background:#18181b;border-radius:12px 12px 0 0;padding:24px 28px;border-bottom:1px solid #27272a;">
-          <img src="${APP_URL}/logo-dark.svg" alt="DealScout" width="130" style="display:block;height:32px;width:auto;" />
+          <img src="${LOGO_URL}" alt="CarDealAlerts" height="32" style="height:32px;width:auto;display:block;border:0;" />
         </td></tr>
 
         <tr><td style="background:#18181b;padding:24px 28px;">
@@ -403,7 +404,7 @@ export async function sendSubscriptionEmail(params: {
       <table cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;">
 
         <tr><td style="background:#18181b;border-radius:12px 12px 0 0;padding:24px 28px;border-bottom:1px solid #27272a;">
-          <img src="${APP_URL}/logo-dark.svg" alt="DealScout" width="130" style="display:block;height:32px;width:auto;" />
+          <img src="${LOGO_URL}" alt="CarDealAlerts" height="32" style="height:32px;width:auto;display:block;border:0;" />
         </td></tr>
 
         <tr><td style="background:#18181b;padding:24px 28px;">

@@ -54,6 +54,7 @@ export const users = pgTable("users", {
   providerPaymentId: text("provider_payment_id"),
   subscriptionStatus: text("subscription_status"),
   currentPeriodEnd: timestamp("current_period_end", { mode: "date" }),
+  emailNotifyMode: text("email_notify_mode").notNull().default('instant'),
   aiCallsThisMonth: integer("ai_calls_this_month").notNull().default(0),
   // Daily counter — resets at midnight UTC
   runsToday: integer('runs_today').notNull().default(0),

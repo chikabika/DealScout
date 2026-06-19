@@ -26,6 +26,7 @@ type RunSearch = Search & {
   runsThisMonth: number
   runsThisMonthResetAt: Date | null
   userAiCallsThisMonth: number
+  emailNotifyMode: string
 }
 
 export type CollectionResult = {
@@ -305,6 +306,7 @@ export async function runCollectionForSearch(search: Search, user: User): Promis
     runsThisMonth: user.runsThisMonth,
     runsThisMonthResetAt: user.runsThisMonthResetAt,
     userAiCallsThisMonth: user.aiCallsThisMonth,
+    emailNotifyMode: user.emailNotifyMode,
   }
 
   let totalNewListings = 0
@@ -791,11 +793,15 @@ export async function runCollectionForSearch(search: Search, user: User): Promis
   )
 
   if (inserted.length > 0) {
-    if (plan.emailMode === 'instant') {
+    const mode = row.emailNotifyMode ?? 'instant'
+    if (mode === 'instant') {
       await sendDealAlert(row.userEmail, row.name, inserted)
-      console.log('[CRON] Email sent to:', row.userEmail)
+      console.log('[CRON] Instant alert sent to:', row.userEmail)
+    } else if (mode === 'off') {
+      console.log('[CRON] Notifications off — skipping email for', row.userEmail)
     } else {
-      console.log('[CRON] digest_daily mode — email queued for daily batch')
+      // 'daily': inserted rows have alerted=false; a future digest cron picks them up.
+      console.log(`[CRON] ${mode} mode — deferring to digest for`, row.userEmail)
     }
     totalNewListings += inserted.length
   }
