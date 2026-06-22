@@ -374,6 +374,7 @@ export default function PricingPage() {
               </p>
             </div>
             <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-zinc-500">
+              <Link href="/blog" className="hover:text-zinc-300 transition-colors">Blog</Link>
               <Link href="/terms" className="hover:text-zinc-300 transition-colors">Terms of Service</Link>
               <Link href="/privacy" className="hover:text-zinc-300 transition-colors">Privacy Policy</Link>
               <Link href="/refund-policy" className="hover:text-zinc-300 transition-colors">Refund Policy</Link>
