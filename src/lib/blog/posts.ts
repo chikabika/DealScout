@@ -8,6 +8,14 @@ export type BlogPost = {
 
 export const posts: BlogPost[] = [
   {
+    slug: 'is-car-flipping-profitable-2026',
+    title: 'Is Car Flipping Profitable in 2026? An Honest Breakdown',
+    description:
+      'A realistic look at car flipping profit margins, the hidden costs nobody warns you about, and what separates flippers who make money from those who lose it in 2026.',
+    date: '2026-06-22',
+    author: 'CarDealAlerts',
+  },
+  {
     slug: 'best-tools-for-car-flipping-2026',
     title: 'Best Tools for Car Flipping in 2026: How Pros Find Underpriced Cars First',
     description:
