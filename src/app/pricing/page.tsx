@@ -236,6 +236,12 @@ export default function PricingPage() {
           <p className="mt-3 text-sm text-zinc-500">
             All paid plans are billed monthly and can be cancelled at any time.
           </p>
+          <p className="mt-4 text-sm text-zinc-400">
+            Not ready to subscribe?{' '}
+            <Link href="/free-sample-alerts" className="font-medium text-emerald-400 hover:underline">
+              Request 3 free sample alerts first.
+            </Link>
+          </p>
         </div>
 
         {/* Plan cards */}

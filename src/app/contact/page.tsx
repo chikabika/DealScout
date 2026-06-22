@@ -50,6 +50,20 @@ export default function ContactPage() {
           </div>
         </div>
 
+        {/* Free sample alerts CTA */}
+        <div className="mt-8 rounded-xl border border-emerald-400/20 bg-emerald-400/5 p-6">
+          <h2 className="text-lg font-semibold text-white">Want free sample alerts?</h2>
+          <p className="mt-2 text-sm leading-6 text-zinc-400">
+            If you are a dealer, flipper, or serious buyer, send us your city, target vehicles, and budget range. We can prepare a few sample alerts so you can see if CarDealAlerts is useful for your market.
+          </p>
+          <Link
+            href="/free-sample-alerts"
+            className="mt-4 inline-flex h-10 items-center justify-center rounded-lg bg-emerald-400 px-5 text-sm font-semibold text-zinc-950 transition hover:bg-emerald-300"
+          >
+            Request Free Sample Alerts
+          </Link>
+        </div>
+
         <div className="mt-8 flex flex-wrap gap-4 text-sm text-zinc-500">
           <Link href="/terms" className="hover:text-zinc-300">Terms of Service</Link>
           <Link href="/privacy" className="hover:text-zinc-300">Privacy Policy</Link>
