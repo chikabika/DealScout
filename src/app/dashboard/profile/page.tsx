@@ -8,7 +8,7 @@ import { getDb } from '@/lib/db'
 import { listings, searches, users } from '@/lib/schema'
 import { getPlan } from '@/lib/plans'
 import { LogoutButton } from '../LogoutButton'
-import { NotificationSettings } from './NotificationSettings'
+import NotificationSettings from './NotificationSettings'
 
 function ProgressBar({
   label,
