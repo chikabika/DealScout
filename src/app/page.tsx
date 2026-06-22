@@ -840,6 +840,7 @@ export default function Home() {
                 <p className="text-xs font-semibold uppercase tracking-widest text-zinc-600">Product</p>
                 <div className="flex flex-col gap-2">
                   <Link href="/pricing" className="hover:text-zinc-300 transition-colors">Pricing</Link>
+                  <Link href="/blog" className="hover:text-zinc-300 transition-colors">Blog</Link>
                   <Link href="/login" className="hover:text-zinc-300 transition-colors">Log in</Link>
                   <Link href="/register" className="hover:text-zinc-300 transition-colors">Sign up</Link>
                   <Link href="/contact" className="hover:text-zinc-300 transition-colors">Contact</Link>
