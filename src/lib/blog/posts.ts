@@ -8,6 +8,14 @@ export type BlogPost = {
 
 export const posts: BlogPost[] = [
   {
+    slug: 'how-to-find-cars-to-flip-2026',
+    title: 'How to Find Cars to Flip in 2026: Where the Pros Source Deals',
+    description:
+      'Where and how profitable flippers source underpriced cars in 2026 — the best marketplaces, how to spot a deal, and the system that gets you to listings first.',
+    date: '2026-06-22',
+    author: 'CarDealAlerts',
+  },
+  {
     slug: 'cardealalerts-vs-swoopa',
     title: 'CarDealAlerts vs Swoopa: Which Car Sourcing Tool Is Worth It in 2026?',
     description:
