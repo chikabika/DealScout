@@ -8,6 +8,14 @@ export type BlogPost = {
 
 export const posts: BlogPost[] = [
   {
+    slug: 'cardealalerts-vs-swoopa',
+    title: 'CarDealAlerts vs Swoopa: Which Car Sourcing Tool Is Worth It in 2026?',
+    description:
+      'An honest, side-by-side comparison of CarDealAlerts and Swoopa — pricing, free plans, marketplace coverage, AI deal scoring, and alert speed for car flippers in 2026.',
+    date: '2026-06-22',
+    author: 'CarDealAlerts',
+  },
+  {
     slug: 'is-car-flipping-profitable-2026',
     title: 'Is Car Flipping Profitable in 2026? An Honest Breakdown',
     description:
