@@ -46,6 +46,28 @@ export default async function BlogPostPage({
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Article",
+            headline: post.title,
+            description: post.description,
+            datePublished: post.date,
+            author: {
+              "@type": "Organization",
+              name: "CarDealAlerts",
+              url: "https://www.cardealalerts.com",
+            },
+            publisher: {
+              "@type": "Organization",
+              name: "CarDealAlerts",
+              url: "https://www.cardealalerts.com",
+            },
+          }).replace(/</g, "\\u003c"),
+        }}
+      />
       <BlogNav />
 
       <main className="mx-auto max-w-4xl px-6 py-16 pb-24">
