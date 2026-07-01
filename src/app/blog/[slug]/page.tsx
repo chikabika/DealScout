@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import { BlogNav, BlogFooter } from '@/app/_blog/components'
 import { getAllPosts, getPostBySlug } from '@/lib/blog/posts'
 
@@ -56,9 +57,9 @@ export default async function BlogPostPage({
             description: post.description,
             datePublished: post.date,
             author: {
-              "@type": "Organization",
-              name: "CarDealAlerts",
-              url: "https://www.cardealalerts.com",
+              "@type": "Person",
+              name: "Salah",
+              url: "https://www.cardealalerts.com/about",
             },
             publisher: {
               "@type": "Organization",
@@ -82,7 +83,14 @@ export default async function BlogPostPage({
               month: 'long',
               day: 'numeric',
             })}
-            {post.author ? ` · ${post.author}` : ''}
+            {post.author ? (
+              <>
+                {' · '}
+                <Link href="/about" className="hover:underline">
+                  {post.author}
+                </Link>
+              </>
+            ) : ''}
           </p>
         </div>
 
