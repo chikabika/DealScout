@@ -8,6 +8,14 @@ export type BlogPost = {
 
 export const posts: BlogPost[] = [
   {
+    slug: 'how-to-find-car-deals-on-facebook-marketplace',
+    title: 'How to Find Car Deals on Facebook Marketplace in 2026',
+    description:
+      'A practical guide to finding underpriced cars on Facebook Marketplace — what to search, how to spot a deal, and how to move faster than other buyers.',
+    date: '2026-07-01',
+    author: 'Salah',
+  },
+  {
     slug: 'how-to-find-cars-to-flip-2026',
     title: 'How to Find Cars to Flip in 2026: Where the Pros Source Deals',
     description:
