@@ -162,7 +162,7 @@ function DashboardMockup() {
 
 // ─── FAQ ──────────────────────────────────────────────────────────────────────
 
-const FAQ = [
+const FAQ: { q: string; a: string; note?: React.ReactNode }[] = [
   {
     q: 'What do I get immediately after upgrading?',
     a: 'Your account is upgraded instantly. You can create additional saved searches right away, and the next scheduled run will use your new plan limits, polling frequency, and marketplaces.',
@@ -186,6 +186,19 @@ const FAQ = [
   {
     q: 'Is there a free plan?',
     a: '1 saved search is enough to prove CarDealAlerts\' value. When you\'re ready for more, upgrade to Pro.',
+    note: (
+      <>
+        Curious whether it&apos;s worth your time? See our take on{' '}
+        <Link href="/blog/is-car-flipping-profitable-2026" className="text-emerald-400 hover:underline">
+          whether car flipping is profitable in 2026
+        </Link>{' '}
+        and our roundup of the{' '}
+        <Link href="/blog/best-tools-for-car-flipping-2026" className="text-emerald-400 hover:underline">
+          best tools for car flipping
+        </Link>
+        .
+      </>
+    ),
   },
   {
     q: "What does 'runs' mean?",
@@ -362,10 +375,11 @@ export default function PricingPage() {
             Frequently asked questions
           </h2>
           <div className="mt-10 grid gap-4 sm:grid-cols-2">
-            {FAQ.map(({ q, a }) => (
+            {FAQ.map(({ q, a, note }) => (
               <div key={q} className="rounded-xl border border-zinc-800 bg-zinc-900 p-6">
                 <h3 className="font-semibold text-zinc-100">{q}</h3>
                 <p className="mt-2 text-sm leading-6 text-zinc-400">{a}</p>
+                {note && <p className="mt-2 text-sm leading-6 text-zinc-400">{note}</p>}
               </div>
             ))}
           </div>

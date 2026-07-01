@@ -539,6 +539,13 @@ export default function Home() {
               <p className="mt-4 leading-7 text-zinc-400">
                 CarDealAlerts helps you monitor local marketplaces for vehicles that may be priced below market. Instead of manually checking multiple sites every day, you can create saved searches and receive alerts when matching opportunities appear.
               </p>
+              <p className="mt-4 leading-7 text-zinc-400">
+                Want to learn how pros find underpriced cars? Read our guide on{" "}
+                <Link href="/blog/how-to-find-cars-to-flip-2026" className="text-emerald-300 hover:underline">
+                  how to find cars to flip in 2026
+                </Link>
+                .
+              </p>
               <Link
                 href="/free-sample-alerts"
                 className="mt-8 inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-emerald-400 px-6 text-sm font-semibold text-zinc-950 transition hover:bg-emerald-300"
