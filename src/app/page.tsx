@@ -865,6 +865,7 @@ export default function Home() {
                 <div className="flex flex-col gap-2">
                   <Link href="/pricing" className="hover:text-zinc-300 transition-colors">Pricing</Link>
                   <Link href="/blog" className="hover:text-zinc-300 transition-colors">Blog</Link>
+                  <Link href="/about" className="hover:text-zinc-300 transition-colors">About</Link>
                   <Link href="/login" className="hover:text-zinc-300 transition-colors">Log in</Link>
                   <Link href="/register" className="hover:text-zinc-300 transition-colors">Sign up</Link>
                   <Link href="/contact" className="hover:text-zinc-300 transition-colors">Contact</Link>
