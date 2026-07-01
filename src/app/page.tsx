@@ -769,6 +769,23 @@ export default function Home() {
       </section>
 
       {/* ── FAQ ── */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: faqs.map(({ q, a }) => ({
+              "@type": "Question",
+              name: q,
+              acceptedAnswer: {
+                "@type": "Answer",
+                text: a,
+              },
+            })),
+          }).replace(/</g, "\\u003c"),
+        }}
+      />
       <section className="mx-auto max-w-4xl px-5 py-20 sm:px-6">
         <h2 className="text-center text-3xl font-semibold tracking-tight text-white">
           Questions buyers ask before starting.

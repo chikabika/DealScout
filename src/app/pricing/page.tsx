@@ -340,6 +340,23 @@ export default function PricingPage() {
         </div>
 
         {/* FAQ */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              mainEntity: FAQ.map(({ q, a }) => ({
+                "@type": "Question",
+                name: q,
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: a,
+                },
+              })),
+            }).replace(/</g, "\\u003c"),
+          }}
+        />
         <div className="mt-20">
           <h2 className="text-center text-2xl font-bold text-white">
             Frequently asked questions
