@@ -1,7 +1,7 @@
 /**
  * AI deal scorer — Pro/Dealer only
  *
- * Uses Claude Sonnet via the Anthropic API to analyse each listing and produce:
+ * Uses Claude via the Anthropic API to analyse each listing and produce:
  *   • dealScore      0-100 (100 = steal, 50 = fair, <20 = avoid)
  *   • estimatedValue USD fair market value
  *   • savings        estimatedValue - askPrice (negative = overpriced)
@@ -10,7 +10,7 @@
  *   • redFlags       warning signs (rust, salvage hints, suspiciously low price, etc.)
  *   • summary        one sentence ≤ 100 chars
  *
- * Cost: ~$0.005/listing at Sonnet pricing.
+ * Cost: ~$0.001/listing at Haiku pricing.
  * Guard: callers should check plan.maxAiCallsPerMonth before invoking.
  */
 
@@ -18,14 +18,15 @@ import 'server-only'
 import Anthropic from '@anthropic-ai/sdk'
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY
-// Scoring is the paid-plan quality feature, so it runs on Sonnet.
-// Override with ANTHROPIC_SCORER_MODEL_ID (or the shared ANTHROPIC_MODEL_ID).
+// Runs on Haiku for now (cheapest tier). Override with
+// ANTHROPIC_SCORER_MODEL_ID (or the shared ANTHROPIC_MODEL_ID) to move
+// scoring back to Sonnet without a code change.
 // `||` (not `??`) so the empty-string default from next.config env still
 // falls through to the code default.
 const SCORER_MODEL_ID   =
   process.env.ANTHROPIC_SCORER_MODEL_ID ||
   process.env.ANTHROPIC_MODEL_ID ||
-  'claude-sonnet-4-5'
+  'claude-haiku-4-5'
 
 const client = ANTHROPIC_API_KEY ? new Anthropic({ apiKey: ANTHROPIC_API_KEY }) : null
 
