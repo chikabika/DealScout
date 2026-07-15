@@ -10,6 +10,30 @@ type CollectResponse = {
   providersRun: string[]
   error?: string
   secondsLeft?: number
+  skipReason?: string
+  stats?: {
+    apifyReturned?: number
+    afterSoldLive?: number
+    afterPrice?: number
+    afterLocation?: number
+    afterJunk?: number
+    afterBlacklist?: number
+    afterClassifier?: number
+    newlyInserted?: number
+  } | null
+}
+
+function describeEmptyRun(data: CollectResponse): string {
+  if (data.skipReason === 'daily_limit') return 'Daily run limit reached — try again tomorrow or upgrade your plan'
+  if (data.skipReason === 'monthly_limit') return 'Monthly run limit reached — upgrade your plan for more runs'
+  const s = data.stats
+  if (!s) return 'No new deals found this time'
+  if ((s.apifyReturned ?? 0) === 0) return 'Source returned no listings — try widening price range or radius'
+  if ((s.afterPrice ?? 0) === 0) return `${s.apifyReturned} found, all outside your price range`
+  if ((s.afterLocation ?? 0) === 0) return `${s.apifyReturned} found, all outside your city/state`
+  if ((s.afterBlacklist ?? 0) === 0) return `${s.apifyReturned} found, all filtered out (junk/blacklist)`
+  if ((s.afterClassifier ?? 0) === 0) return `${s.apifyReturned} found — duplicates or not cars`
+  return `${s.apifyReturned} found — all already in your deals`
 }
 
 const COOLDOWN_MS = 60_000
@@ -101,8 +125,9 @@ export function RunNowButton({
           duration: 6000,
         })
       } else {
-        toast.info('No new deals found this time', {
+        toast.info(describeEmptyRun(data), {
           description: searchName,
+          duration: 8000,
         })
       }
     } catch {
