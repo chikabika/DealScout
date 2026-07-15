@@ -1,46 +1,40 @@
 /**
  * AI-powered listing classifier
  *
- * Uses Claude via Amazon Bedrock to verify that a listing actually shows a
+ * Uses Claude via the Anthropic API to verify that a listing actually shows a
  * passenger car/SUV/truck/van — filtering out motorcycles, boats, ATVs, RVs,
  * trailers, and parts-only listings that slip through the keyword filter.
  *
  * Two-stage approach:
  *   1. Free text-based keyword reject (instant, no API call)
- *   2. Vision-based classification via Bedrock (base64 — URL-source not supported)
+ *   2. Vision-based classification (image inlined as base64)
  *
  * Always errs on the side of keeping listings when confidence is low or when
  * the classifier errors — better to show an edge case than silently drop a car.
  */
 
-import { AnthropicBedrock } from '@anthropic-ai/bedrock-sdk'
+import Anthropic from '@anthropic-ai/sdk'
 
 // Read env explicitly — Next.js doesn't always populate process.env the way
 // tsx scripts do, and API routes can miss vars that aren't in next.config.ts.
-const AWS_ACCESS_KEY_ID     = process.env.AWS_ACCESS_KEY_ID
-const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY
-const AWS_REGION            = process.env.AWS_DEFAULT_REGION ?? process.env.AWS_REGION ?? 'us-east-1'
-const MODEL_ID              = process.env.BEDROCK_MODEL_ID ?? 'us.anthropic.claude-sonnet-4-20250514-v1:0'
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY
+// Haiku 4.5 (vision-capable) — this is a cheap car/not-car check, so it runs on
+// the fastest, lowest-cost tier. Deliberately NOT reading ANTHROPIC_MODEL_ID:
+// that var drives the deal scorer (Sonnet) and would silently upgrade this
+// call's cost. Override with ANTHROPIC_CLASSIFIER_MODEL_ID if needed.
+// `||` (not `??`) so the empty-string default from next.config env still
+// falls through to the code default.
+const MODEL_ID          = process.env.ANTHROPIC_CLASSIFIER_MODEL_ID || 'claude-haiku-4-5'
 
 // Log at module-load so misconfig surfaces in the dev console, not silently at runtime
-if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY) {
-  console.warn('[CLASSIFIER] AWS credentials missing from env — classifier will fall back to keep-all mode')
-  console.warn('  AWS_ACCESS_KEY_ID present:', !!AWS_ACCESS_KEY_ID)
-  console.warn('  AWS_SECRET_ACCESS_KEY present:', !!AWS_SECRET_ACCESS_KEY)
-  console.warn('  AWS_REGION:', AWS_REGION)
+if (!ANTHROPIC_API_KEY) {
+  console.warn('[CLASSIFIER] ANTHROPIC_API_KEY missing from env — classifier will fall back to keep-all mode')
   console.warn('  MODEL_ID:', MODEL_ID)
 } else {
-  console.log('[CLASSIFIER] Bedrock ready —', MODEL_ID, 'in', AWS_REGION)
+  console.log('[CLASSIFIER] Anthropic ready —', MODEL_ID)
 }
 
-const client =
-  AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY
-    ? new AnthropicBedrock({
-        awsAccessKey: AWS_ACCESS_KEY_ID,
-        awsSecretKey: AWS_SECRET_ACCESS_KEY,
-        awsRegion: AWS_REGION,
-      })
-    : null
+const client = ANTHROPIC_API_KEY ? new Anthropic({ apiKey: ANTHROPIC_API_KEY }) : null
 
 export type Classification = {
   isCar: boolean
@@ -164,8 +158,9 @@ function textReject(title: string): Classification | null {
 }
 
 // ─── Image fetcher ────────────────────────────────────────────────────────────
-// Bedrock's Anthropic API requires base64-encoded images — URL-source is not
-// supported. We download the image server-side and encode it here.
+// We download the image server-side and base64-encode it. (The Anthropic API
+// also accepts URL sources, but many Facebook CDN URLs expire or block
+// hotlinking, so fetching once and inlining is more reliable.)
 
 async function imageToBase64(url: string): Promise<{
   data: string
@@ -189,9 +184,9 @@ async function imageToBase64(url: string): Promise<{
 
     const buf = Buffer.from(await res.arrayBuffer())
 
-    // Bedrock has a ~5 MB limit per image
+    // The Anthropic API has a ~5 MB limit per image
     if (buf.length > 5 * 1024 * 1024) {
-      console.warn('[CLASSIFIER] image too large for Bedrock:', buf.length, 'bytes — skipping vision')
+      console.warn('[CLASSIFIER] image too large for the Anthropic API:', buf.length, 'bytes — skipping vision')
       return null
     }
 
@@ -202,7 +197,7 @@ async function imageToBase64(url: string): Promise<{
   }
 }
 
-// ─── Stage 2: vision classification via Bedrock ───────────────────────────────
+// ─── Stage 2: vision classification via the Anthropic API ─────────────────────
 
 export async function classifyListing(input: {
   imageUrl: string | null
@@ -219,12 +214,12 @@ export async function classifyListing(input: {
     return { isCar: true, vehicleType: 'other', confidence: 'low', reason: 'no_image_keeping' }
   }
 
-  // No Bedrock credentials → keep the listing
+  // No Anthropic API key → keep the listing
   if (!client) {
-    return { isCar: true, vehicleType: 'other', confidence: 'low', reason: 'no_bedrock_credentials' }
+    return { isCar: true, vehicleType: 'other', confidence: 'low', reason: 'no_anthropic_api_key' }
   }
 
-  // Fetch the image as base64 (Bedrock requires base64, not URL)
+  // Fetch the image and inline it as base64 (see imageToBase64 note above)
   const img = await imageToBase64(input.imageUrl)
   if (!img) {
     return { isCar: true, vehicleType: 'other', confidence: 'low', reason: 'image_fetch_failed_keeping' }
@@ -267,13 +262,13 @@ Reply as JSON only, no markdown:
     return JSON.parse(cleaned) as Classification
   } catch (e) {
     const err = e instanceof Error ? e : new Error(String(e))
-    console.error('[CLASSIFIER] Bedrock call failed:', err.message)
-    console.error('  Model:', MODEL_ID, 'Region:', AWS_REGION)
-    if (err.message.toLowerCase().includes('auth') || err.message.toLowerCase().includes('credential')) {
-      console.error('  → Check that AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are set in .env.local')
+    console.error('[CLASSIFIER] Anthropic call failed:', err.message)
+    console.error('  Model:', MODEL_ID)
+    if (err.message.toLowerCase().includes('auth') || err.message.toLowerCase().includes('credential') || err.message.includes('401')) {
+      console.error('  → Check that ANTHROPIC_API_KEY is set in .env.local')
       console.error('  → Restart dev server after .env.local changes (Next.js caches env at startup)')
     }
     // Keep the listing — better to show an edge case than silently drop a car
-    return { isCar: true, vehicleType: 'other', confidence: 'low', reason: 'bedrock_error_keeping' }
+    return { isCar: true, vehicleType: 'other', confidence: 'low', reason: 'anthropic_error_keeping' }
   }
 }

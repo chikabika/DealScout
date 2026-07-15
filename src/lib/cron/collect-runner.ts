@@ -213,12 +213,12 @@ async function runFacebookScraper(search: Search, maxItems: number): Promise<Api
 
   const token = process.env.APIFY_TOKEN
   if (!token) {
-    console.error('[CRON] APIFY_TOKEN not set')
+    console.error('[FB-DEBUG] ABORT: APIFY_TOKEN not set in this deployment')
     return null
   }
 
   const safeMaxItems = Math.max(1, maxItems ?? 10)
-  console.log('[CRON] Facebook scraper — maxItems:', safeMaxItems, 'plan.maxItemsPerRun:', maxItems)
+  console.log('[FB-DEBUG] start — search:', search.id, 'city:', search.city, 'maxItems:', safeMaxItems)
 
   // memo23/facebook-marketplace-scraper-ppe — pay-per-event actor (charged
   // per actor start + per dataset item, no monthly rental). maxItems is the
@@ -244,7 +244,7 @@ async function runFacebookScraper(search: Search, maxItems: number): Promise<Api
   }
   if (queryParts) input.searchQuery = queryParts
 
-  console.log('[CRON] Facebook actor input:', JSON.stringify(input))
+  console.log('[FB-DEBUG] actor input:', JSON.stringify(input))
 
   const actorId = process.env.APIFY_FB_ACTOR_ID ?? 'eaycjEuCMKHBDuL9z'
   const startRes = await fetch(
@@ -258,14 +258,14 @@ async function runFacebookScraper(search: Search, maxItems: number): Promise<Api
 
   if (!startRes.ok) {
     const text = await startRes.text().catch(() => '')
-    console.error('[CRON] Failed to start Apify run:', startRes.status, text)
+    console.error('[FB-DEBUG] FAILED to start Apify run — HTTP', startRes.status, text)
     return null
   }
 
   const startJson = await startRes.json() as { data: { id: string; defaultDatasetId: string } }
   const runId = startJson.data.id
   const datasetId = startJson.data.defaultDatasetId
-  console.log('[CRON] Apify run started:', { runId, datasetId })
+  console.log('[FB-DEBUG] Apify run started:', { runId, datasetId })
 
   let status = 'READY'
   let attempts = 0
@@ -280,7 +280,7 @@ async function runFacebookScraper(search: Search, maxItems: number): Promise<Api
   }
 
   if (status !== 'SUCCEEDED') {
-    console.error(`[CRON] FB Apify run did not succeed after ${attempts} polls — final status: ${status}. Returning null (search will show "Source empty").`)
+    console.error(`[FB-DEBUG] FAILED: Apify run did not succeed after ${attempts} polls — final status: ${status}. Run log: https://console.apify.com/actors/runs/${runId}`)
     return null
   }
 
@@ -288,9 +288,9 @@ async function runFacebookScraper(search: Search, maxItems: number): Promise<Api
     `https://api.apify.com/v2/datasets/${datasetId}/items?token=${token}&clean=true&format=json`,
   )
   const items = (await itemsRes.json()) as ApifyItem[]
-  console.log('[CRON] Apify returned items:', items.length)
+  console.log('[FB-DEBUG] Apify returned items:', items.length)
   if (items.length > 0) {
-    console.log('[CRON] Sample item full:', JSON.stringify(items[0], null, 2))
+    console.log('[FB-DEBUG] sample item:', JSON.stringify(items[0]))
 
     // Facebook falls back to the proxy's IP city when it can't resolve the
     // slug — surface that so bad slugs are caught instead of silently
@@ -302,7 +302,7 @@ async function runFacebookScraper(search: Search, maxItems: number): Promise<Api
       const wanted = (search.city || '').toLowerCase()
       const matches = resolved.includes(wanted) || wanted.includes(resolved)
         || fbCitySlug(search.city) === fbCitySlug(ctx.displayName)
-      console.log(`[CRON] FB resolved location: "${ctx.displayName}" (radius ${ctx.radiusKm}km) — ${matches ? 'matches' : `DOES NOT MATCH search city "${search.city}" — check FB_CITY_SLUG_OVERRIDES`}`)
+      console.log(`[FB-DEBUG] resolved location: "${ctx.displayName}" (radius ${ctx.radiusKm}km) — ${matches ? 'matches search city' : `DOES NOT MATCH search city "${search.city}" — add it to FB_CITY_SLUG_OVERRIDES`}`)
     }
   }
 
@@ -480,13 +480,13 @@ export async function runCollectionForSearch(search: Search, user: User): Promis
 
   // Check daily limit
   if ((row.runsToday ?? 0) >= plan.maxRunsPerDay) {
-    console.log(`[QUOTA] Daily limit hit — ${row.userEmail}: ${row.runsToday}/${plan.maxRunsPerDay} runs today`)
+    console.log(`[FB-DEBUG] [QUOTA] Daily limit hit — run SKIPPED, no providers called — ${row.userEmail}: ${row.runsToday}/${plan.maxRunsPerDay} runs today`)
     return { inserted: 0, stats: null, providersRun: [], skipReason: 'daily_limit' }
   }
 
   // Check monthly limit
   if ((row.runsThisMonth ?? 0) >= plan.maxRunsPerMonth) {
-    console.log(`[QUOTA] Monthly limit hit — ${row.userEmail}: ${row.runsThisMonth}/${plan.maxRunsPerMonth} runs this month`)
+    console.log(`[FB-DEBUG] [QUOTA] Monthly limit hit — run SKIPPED, no providers called — ${row.userEmail}: ${row.runsThisMonth}/${plan.maxRunsPerMonth} runs this month`)
     return { inserted: 0, stats: null, providersRun: [], skipReason: 'monthly_limit' }
   }
 
@@ -650,6 +650,10 @@ export async function runCollectionForSearch(search: Search, user: User): Promis
     }
     lastStats = stats
     console.log('[STATS]', JSON.stringify(stats))
+    console.log(
+      `[FB-DEBUG] funnel: returned=${stats.apifyReturned} → live=${stats.afterSoldLive} → price=${stats.afterPrice} → location=${stats.afterLocation} → junk=${stats.afterJunk} → blacklist=${stats.afterBlacklist} → cars=${stats.afterClassifier} → INSERTED=${stats.newlyInserted}` +
+      (Object.keys(stats.providerErrors ?? {}).length ? ` errors=${JSON.stringify(stats.providerErrors)}` : ''),
+    )
     await db
       .update(searches)
       .set({ lastRunStats: stats, lastRunAt: new Date() })
@@ -835,7 +839,7 @@ export async function runCollectionForSearch(search: Search, user: User): Promis
   let scoredCars: typeof cars = cars
 
   if (enableScoring) {
-    const scorerModelId = process.env.BEDROCK_MODEL_ID ?? 'us.anthropic.claude-sonnet-4-20250514-v1:0'
+    const scorerModelId = process.env.ANTHROPIC_SCORER_MODEL_ID || process.env.ANTHROPIC_MODEL_ID || 'claude-haiku-4-5'
 
     console.log(`[SCORER] Using model: ${scorerModelId} for ${plan.name} plan`)
     console.log(`[SCORER] Running for ${plan.name} user on ${cars.length} listings`)
