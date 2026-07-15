@@ -15,7 +15,8 @@
     "test-craigslist": "tsx scripts/test-craigslist.ts",
     "test-craigslist-actor": "tsx scripts/test-craigslist-actor.ts",
     "test-carsdotcom": "tsx scripts/test-carsdotcom.ts",
-    "test-anthropic": "tsx scripts/test-anthropic.ts"
+    "test-anthropic": "tsx scripts/test-anthropic.ts",
+    "hash-master-password": "tsx scripts/hash-master-password.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.98.0",
