@@ -38,7 +38,7 @@ export type CollectionResult = {
 
 interface ApifyItem {
   id: string
-  url: string
+  url?: string
   title?: string
   priceFormatted?: string
   priceNumeric?: number
@@ -58,15 +58,66 @@ interface ApifyItem {
   isLive?: boolean
   deepScrapeStatus?: string
   marketplaceListingTitle?: string
-  description?: string | null
+  description?: string | { text?: string } | null
   redactedDescription?: string
-  listingPrice?: { amount?: number; currency?: string }
-  location?: { reverseGeocode?: { cityPage?: { displayName?: string } } }
+  listingPrice?: { amount?: number | string; currency?: string }
+  location?: {
+    reverseGeocode?: { cityPage?: { displayName?: string } }
+    reverse_geocode?: { city?: string; state?: string; city_page?: { display_name?: string } }
+  }
   primaryListingPhoto?: { image?: { uri?: string } }
   year?: number | null
   make?: string | null
   model?: string | null
   mileage?: number | null
+  // memo23/facebook-marketplace-scraper-ppe emits Facebook's raw GraphQL
+  // snake_case fields; keep both conventions so either actor output parses.
+  listingUrl?: string
+  facebookUrl?: string
+  marketplace_listing_title?: string
+  custom_title?: string
+  listing_price?: { amount?: number | string; formatted_amount?: string }
+  primary_listing_photo?: { image?: { uri?: string }; listing_image?: { uri?: string } }
+  redacted_description?: { text?: string } | string
+  is_sold?: boolean
+  is_live?: boolean
+  is_pending?: boolean
+}
+
+function fbItemUrl(item: ApifyItem): string | null {
+  if (item.url) return item.url
+  if (item.listingUrl) return item.listingUrl
+  if (item.facebookUrl) return item.facebookUrl
+  if (item.id) return `https://www.facebook.com/marketplace/item/${item.id}/`
+  return null
+}
+
+function fbItemPrice(item: ApifyItem): number {
+  const amount = item.priceNumeric ?? item.listingPrice?.amount ?? item.listing_price?.amount
+  const numeric = typeof amount === 'string' ? Number.parseFloat(amount) : amount
+  if (numeric != null && Number.isFinite(numeric) && numeric > 0) return Math.round(numeric)
+  const formatted = item.priceFormatted ?? item.listing_price?.formatted_amount
+  if (formatted) {
+    const parsed = Number.parseFloat(formatted.replace(/[^0-9.]/g, ''))
+    if (Number.isFinite(parsed)) return Math.round(parsed)
+  }
+  return 0
+}
+
+function fbItemLocation(item: ApifyItem): string | null {
+  if (item.locationText) return item.locationText
+  const geo = item.location
+  if (geo?.reverseGeocode?.cityPage?.displayName) return geo.reverseGeocode.cityPage.displayName
+  const snake = geo?.reverse_geocode
+  if (snake?.city_page?.display_name) return snake.city_page.display_name
+  if (snake?.city) return snake.state ? `${snake.city}, ${snake.state}` : snake.city
+  return null
+}
+
+function fbItemDescription(item: ApifyItem): string | null {
+  const desc = item.description ?? item.redacted_description ?? item.redactedDescription
+  if (typeof desc === 'string') return desc || null
+  return desc?.text ?? null
 }
 
 type RawProviderListing =
@@ -131,14 +182,23 @@ async function runFacebookScraper(search: Search, maxItems: number): Promise<Api
   const safeMaxItems = Math.max(1, maxItems ?? 10)
   console.log('[CRON] Facebook scraper — maxItems:', safeMaxItems, 'plan.maxItemsPerRun:', maxItems)
 
+  // memo23/facebook-marketplace-scraper-ppe — pay-per-event actor (charged
+  // per actor start + per dataset item, no monthly rental). maxItems is the
+  // hard cost cap: the actor stops scrolling once the limit is hit, so we
+  // never pay for more items than the plan allows. Filters (price band,
+  // minYear, mileage, vehicleType, daysSinceListed, sort) all travel inside
+  // the marketplace search URL built by the provider's urlBuilder, so
+  // Facebook filters server-side before any billable item is scraped.
+  const actorId = process.env.APIFY_FB_ACTOR_ID ?? 'eaycjEuCMKHBDuL9z'
   const startRes = await fetch(
-    `https://api.apify.com/v2/acts/happitap~facebook-marketplace-listings-scraper/runs?token=${token}`,
+    `https://api.apify.com/v2/acts/${actorId}/runs?token=${token}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        urls: [{ url: builtUrl }],
+        startUrls: [{ url: builtUrl }],
         maxItems: safeMaxItems,
+        proxy: { useApifyProxy: true, apifyProxyGroups: ['RESIDENTIAL'] },
       }),
     },
   )
@@ -186,23 +246,28 @@ async function runFacebookScraper(search: Search, maxItems: number): Promise<Api
 function normalizeToPipeline(raw: RawProviderListing, search: Search): PipelineListing | null {
   if (raw.provider === 'facebook') {
     const item = raw.listing
-    if (!item.id || !item.url) return null
+    const url = fbItemUrl(item)
+    if (!item.id || !url) return null
 
     return {
       provider: 'facebook',
       externalId: String(item.id),
-      title: item.title ?? '',
-      price: Math.round(item.priceNumeric ?? item.listingPrice?.amount ?? 0),
-      location: item.locationText ?? null,
-      url: item.url,
-      image: item.image ?? item.thumbnailUrl ?? null,
-      description: item.description ?? null,
+      title: item.title ?? item.marketplaceListingTitle ?? item.marketplace_listing_title ?? item.custom_title ?? '',
+      price: fbItemPrice(item),
+      location: fbItemLocation(item),
+      url,
+      image: item.image ?? item.thumbnailUrl
+        ?? item.primaryListingPhoto?.image?.uri
+        ?? item.primary_listing_photo?.image?.uri
+        ?? item.primary_listing_photo?.listing_image?.uri
+        ?? null,
+      description: fbItemDescription(item),
       year: item.year ?? null,
       make: item.make ?? null,
       model: item.model ?? null,
       mileage: item.mileage ?? null,
-      isSold: item.isSold,
-      isLive: item.isLive,
+      isSold: item.isSold ?? item.is_sold,
+      isLive: item.isLive ?? item.is_live,
     }
   }
 

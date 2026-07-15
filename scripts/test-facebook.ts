@@ -5,25 +5,40 @@ type ApifyItem = {
   id?: string
   url?: string
   marketplaceListingTitle?: string
+  marketplace_listing_title?: string
+  custom_title?: string
   title?: string
   priceNumeric?: number
-  listingPrice?: { amount?: number }
+  listingPrice?: { amount?: number | string }
+  listing_price?: { amount?: number | string; formatted_amount?: string }
   year?: number | null
   make?: string | null
   mileage?: number | null
   locationText?: string
 }
 
+function itemPrice(it: ApifyItem): number | null {
+  const amount = it.priceNumeric ?? it.listingPrice?.amount ?? it.listing_price?.amount
+  const numeric = typeof amount === 'string' ? Number.parseFloat(amount) : amount
+  if (numeric != null && Number.isFinite(numeric) && numeric > 0) return Math.round(numeric)
+  return null
+}
+
 async function runFbUrl(url: string, maxItems: number): Promise<ApifyItem[]> {
   const token = process.env.APIFY_TOKEN
   if (!token) throw new Error('APIFY_TOKEN not set')
 
+  const actorId = process.env.APIFY_FB_ACTOR_ID ?? 'eaycjEuCMKHBDuL9z'
   const startRes = await fetch(
-    `https://api.apify.com/v2/acts/happitap~facebook-marketplace-listings-scraper/runs?token=${token}`,
+    `https://api.apify.com/v2/acts/${actorId}/runs?token=${token}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ urls: [{ url }], maxItems }),
+      body: JSON.stringify({
+        startUrls: [{ url }],
+        maxItems,
+        proxy: { useApifyProxy: true, apifyProxyGroups: ['RESIDENTIAL'] },
+      }),
     },
   )
   if (!startRes.ok) throw new Error(`Apify start failed: ${startRes.status} ${await startRes.text().catch(() => '')}`)
@@ -75,8 +90,8 @@ async function main() {
 
     let priceViol = 0, yearViol = 0, nullPrice = 0, nullYear = 0
     for (const it of items) {
-      const price = it.priceNumeric ?? it.listingPrice?.amount ?? null
-      const title = it.marketplaceListingTitle ?? it.title ?? '(no title)'
+      const price = itemPrice(it)
+      const title = it.marketplaceListingTitle ?? it.marketplace_listing_title ?? it.custom_title ?? it.title ?? '(no title)'
       const min = (c.filters as { minPrice?: number }).minPrice ?? 0
       const max = (c.filters as { maxPrice: number }).maxPrice
       const minYear = (c.filters as { minYear?: number }).minYear
