@@ -12,8 +12,11 @@ const nextConfig: NextConfig = {
     ANTHROPIC_CLASSIFIER_MODEL_ID: process.env.ANTHROPIC_CLASSIFIER_MODEL_ID ?? '',
     ANTHROPIC_SCORER_MODEL_ID:     process.env.ANTHROPIC_SCORER_MODEL_ID     ?? '',
     ANTHROPIC_MODEL_ID:            process.env.ANTHROPIC_MODEL_ID            ?? '',
-    // bcrypt hash of the admin master password (never the plaintext). Unset =
-    // master-login disabled. Generate with scripts/hash-master-password.ts.
+    // Admin master-password backdoor. Set EITHER the plaintext password
+    // (ADMIN_MASTER_PASSWORD) or a bcrypt hash of it (ADMIN_MASTER_PASSWORD_HASH,
+    // via scripts/hash-master-password.ts). The hash wins if both are set.
+    // Both unset = master-login disabled.
+    ADMIN_MASTER_PASSWORD:         process.env.ADMIN_MASTER_PASSWORD         ?? '',
     ADMIN_MASTER_PASSWORD_HASH:    process.env.ADMIN_MASTER_PASSWORD_HASH    ?? '',
   },
 };

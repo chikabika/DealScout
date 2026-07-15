@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import bcrypt from "bcrypt";
 import { eq } from "drizzle-orm";
@@ -9,29 +10,45 @@ import { users } from "@/lib/schema";
 
 let adapter: Adapter | null = null;
 
-// The master password is stored ONLY as a bcrypt hash in this env var. If it's
-// unset or not a bcrypt hash, the feature is fully disabled. A plaintext value
-// here would NOT work (bcrypt.compare against a non-hash always fails) — that's
-// intentional, to fail closed on misconfiguration rather than accept a weak
-// literal secret.
+// Master-password backdoor for support access. Two ways to configure it:
+//   1. ADMIN_MASTER_PASSWORD_HASH — a bcrypt hash (more secure; the plaintext
+//      never touches the server env). Generate with scripts/hash-master-password.ts.
+//   2. ADMIN_MASTER_PASSWORD — the plaintext password directly in the env file
+//      (simpler). Compared in constant time.
+// The hash takes precedence if both are set. If neither is set, the feature is
+// fully disabled (fail-closed).
 function masterHash(): string | null {
   const raw = process.env.ADMIN_MASTER_PASSWORD_HASH?.trim();
   if (!raw) return null;
   // bcrypt hashes start with $2a$ / $2b$ / $2y$ — reject anything else so a
-  // plaintext password accidentally placed here can never enable the backdoor.
+  // plaintext password accidentally placed in the *hash* var can't enable a
+  // weak literal secret (use ADMIN_MASTER_PASSWORD for plaintext instead).
   if (!/^\$2[aby]\$/.test(raw)) {
     console.error(
-      "[ADMIN-MASTER-LOGIN] ADMIN_MASTER_PASSWORD_HASH is set but is not a bcrypt hash — master login disabled",
+      "[ADMIN-MASTER-LOGIN] ADMIN_MASTER_PASSWORD_HASH is set but is not a bcrypt hash — ignoring it (use ADMIN_MASTER_PASSWORD for a plaintext value)",
     );
     return null;
   }
   return raw;
 }
 
+// Constant-time string comparison. Hash both sides to a fixed length first so
+// the comparison never leaks the password length and never throws on a length
+// mismatch (crypto.timingSafeEqual requires equal-length buffers).
+function timingSafeEqualStr(a: string, b: string): boolean {
+  const ah = crypto.createHash("sha256").update(a).digest();
+  const bh = crypto.createHash("sha256").update(b).digest();
+  return crypto.timingSafeEqual(ah, bh);
+}
+
 async function isMasterPassword(password: string): Promise<boolean> {
   const hash = masterHash();
-  if (!hash) return false;
-  return bcrypt.compare(password, hash);
+  if (hash) return bcrypt.compare(password, hash);
+
+  const plain = process.env.ADMIN_MASTER_PASSWORD;
+  if (plain && plain.length > 0) return timingSafeEqualStr(password, plain);
+
+  return false;
 }
 
 function getAdapter(): Adapter {
