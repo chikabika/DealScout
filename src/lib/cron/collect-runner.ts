@@ -839,7 +839,7 @@ export async function runCollectionForSearch(search: Search, user: User): Promis
   let scoredCars: typeof cars = cars
 
   if (enableScoring) {
-    const scorerModelId = process.env.BEDROCK_MODEL_ID ?? 'us.anthropic.claude-sonnet-4-20250514-v1:0'
+    const scorerModelId = process.env.ANTHROPIC_SCORER_MODEL_ID || process.env.ANTHROPIC_MODEL_ID || 'claude-sonnet-4-5'
 
     console.log(`[SCORER] Using model: ${scorerModelId} for ${plan.name} plan`)
     console.log(`[SCORER] Running for ${plan.name} user on ${cars.length} listings`)

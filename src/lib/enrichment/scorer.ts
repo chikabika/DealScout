@@ -1,7 +1,7 @@
 /**
  * AI deal scorer — Pro/Dealer only
  *
- * Uses Claude Sonnet via Bedrock to analyse each listing and produce:
+ * Uses Claude Sonnet via the Anthropic API to analyse each listing and produce:
  *   • dealScore      0-100 (100 = steal, 50 = fair, <20 = avoid)
  *   • estimatedValue USD fair market value
  *   • savings        estimatedValue - askPrice (negative = overpriced)
@@ -15,30 +15,24 @@
  */
 
 import 'server-only'
-import { AnthropicBedrock } from '@anthropic-ai/bedrock-sdk'
+import Anthropic from '@anthropic-ai/sdk'
 
-const AWS_ACCESS_KEY_ID     = process.env.AWS_ACCESS_KEY_ID
-const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY
-const AWS_REGION            = process.env.AWS_DEFAULT_REGION ?? 'us-east-1'
-// Allow a separate model override for scoring; falls back to the classifier's model
-const SCORER_MODEL_ID       =
-  process.env.BEDROCK_SCORER_MODEL_ID ??
-  process.env.BEDROCK_MODEL_ID ?? 
-  'us.anthropic.claude-sonnet-4-20250514-v1:0'
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY
+// Scoring is the paid-plan quality feature, so it runs on Sonnet.
+// Override with ANTHROPIC_SCORER_MODEL_ID (or the shared ANTHROPIC_MODEL_ID).
+// `||` (not `??`) so the empty-string default from next.config env still
+// falls through to the code default.
+const SCORER_MODEL_ID   =
+  process.env.ANTHROPIC_SCORER_MODEL_ID ||
+  process.env.ANTHROPIC_MODEL_ID ||
+  'claude-sonnet-4-5'
 
-const client =
-  AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY
-    ? new AnthropicBedrock({
-        awsAccessKey: AWS_ACCESS_KEY_ID,
-        awsSecretKey: AWS_SECRET_ACCESS_KEY,
-        awsRegion: AWS_REGION,
-      })
-    : null
+const client = ANTHROPIC_API_KEY ? new Anthropic({ apiKey: ANTHROPIC_API_KEY }) : null
 
 if (!client) {
-  console.warn('[SCORER] AWS credentials missing — Pro deal scoring will be skipped')
+  console.warn('[SCORER] ANTHROPIC_API_KEY missing — Pro deal scoring will be skipped')
 } else {
-  console.log(`[SCORER] Bedrock ready — ${SCORER_MODEL_ID} in ${AWS_REGION}`)
+  console.log(`[SCORER] Anthropic ready — ${SCORER_MODEL_ID}`)
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -73,7 +67,7 @@ async function imageToBase64(url: string): Promise<{
     else if (ct.includes('gif'))  mediaType = 'image/gif'
 
     const buf = Buffer.from(await res.arrayBuffer())
-    if (buf.length > 5 * 1024 * 1024) return null   // Bedrock 5 MB limit
+    if (buf.length > 5 * 1024 * 1024) return null   // Anthropic API 5 MB/image limit
 
     return { data: buf.toString('base64'), mediaType }
   } catch {
@@ -156,7 +150,7 @@ Return JSON ONLY (no markdown, no code fences):
       savings: Math.round(parsed.estimatedValue - input.price),
     }
   } catch (e) {
-    console.error('[SCORER] Bedrock call failed:', e instanceof Error ? e.message : e)
+    console.error('[SCORER] Anthropic call failed:', e instanceof Error ? e.message : e)
     return null
   }
 }
