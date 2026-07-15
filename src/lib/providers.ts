@@ -62,7 +62,7 @@ export const PROVIDERS: Provider[] = [
     logoUrl: '/providers/facebook.svg',
     brandColor: '#1877F2',
     enabled: true,
-    supportedFilters: ['city', 'minPrice', 'maxPrice', 'make', 'model', 'keywords'],
+    supportedFilters: ['city', 'minPrice', 'maxPrice', 'make', 'model', 'keywords', 'radius'],
     urlBuilder: (f) => {
       const city = (f.city || '').toLowerCase().replace(/\s+/g, '')
 
