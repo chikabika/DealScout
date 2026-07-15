@@ -76,12 +76,20 @@ interface ApifyItem {
   facebookUrl?: string
   marketplace_listing_title?: string
   custom_title?: string
-  listing_price?: { amount?: number | string; formatted_amount?: string }
-  primary_listing_photo?: { image?: { uri?: string }; listing_image?: { uri?: string } }
+  listing_price?: { amount?: number | string; formatted_amount?: string; amount_with_offset_in_currency?: string }
+  primary_listing_photo?: { image?: { uri?: string }; listing_image?: { uri?: string }; photo_image_url?: string }
   redacted_description?: { text?: string } | string
   is_sold?: boolean
   is_live?: boolean
   is_pending?: boolean
+  custom_sub_titles_with_rendering_flags?: { subtitle?: string }[]
+  resolvedSearchContext?: {
+    displayName?: string | null
+    city?: string | null
+    radiusKm?: number | null
+    locationId?: string | null
+    source?: string | null
+  }
 }
 
 function fbItemUrl(item: ApifyItem): string | null {
@@ -93,6 +101,14 @@ function fbItemUrl(item: ApifyItem): string | null {
 }
 
 function fbItemPrice(item: ApifyItem): number {
+  // amount_with_offset_in_currency is USD cents even when the listing's
+  // display currency is foreign (observed: "MX$10,500" with offset 60005 =
+  // $600.05), whereas `amount` is the raw local-currency value — prefer it.
+  const offset = item.listing_price?.amount_with_offset_in_currency
+  if (offset) {
+    const cents = Number.parseFloat(offset)
+    if (Number.isFinite(cents) && cents > 0) return Math.round(cents / 100)
+  }
   const amount = item.priceNumeric ?? item.listingPrice?.amount ?? item.listing_price?.amount
   const numeric = typeof amount === 'string' ? Number.parseFloat(amount) : amount
   if (numeric != null && Number.isFinite(numeric) && numeric > 0) return Math.round(numeric)
@@ -102,6 +118,27 @@ function fbItemPrice(item: ApifyItem): number {
     if (Number.isFinite(parsed)) return Math.round(parsed)
   }
   return 0
+}
+
+// Facebook shows mileage as a subtitle like "109K miles" or "172K km"
+function fbItemMileage(item: ApifyItem): number | null {
+  if (item.mileage != null) return item.mileage
+  for (const entry of item.custom_sub_titles_with_rendering_flags ?? []) {
+    const match = /([\d.,]+)\s*(k)?\s*(km|miles|mi)\b/i.exec(entry.subtitle ?? '')
+    if (!match) continue
+    let value = Number.parseFloat(match[1].replace(/,/g, ''))
+    if (!Number.isFinite(value) || value <= 0) continue
+    if (match[2]) value *= 1000
+    if (/km/i.test(match[3])) value *= 0.621371
+    return Math.round(value)
+  }
+  return null
+}
+
+function fbItemYear(item: ApifyItem, title: string): number | null {
+  if (item.year != null) return item.year
+  const match = /\b(19[5-9]\d|20[0-4]\d)\b/.exec(title)
+  return match ? Number(match[0]) : null
 }
 
 function fbItemLocation(item: ApifyItem): string | null {
@@ -155,6 +192,21 @@ type PipelineListing = {
 
 type ClassifiedListing = PipelineListing & { _classification: Classification }
 
+// Facebook resolves the marketplace location from its own city slugs; an
+// unknown slug silently falls back to the scraping proxy's IP location
+// (verified live: "losangeles" and "Los Angeles, California" both resolved
+// to San Francisco, "la" correctly resolved to Los Angeles + radius).
+const FB_CITY_SLUG_OVERRIDES: Record<string, string> = {
+  losangeles: 'la',
+  newyork: 'nyc',
+  newyorkcity: 'nyc',
+}
+
+function fbCitySlug(city: string): string {
+  const compact = (city || '').toLowerCase().replace(/[^a-z]/g, '')
+  return FB_CITY_SLUG_OVERRIDES[compact] ?? compact
+}
+
 async function runFacebookScraper(search: Search, maxItems: number): Promise<ApifyItem[] | null> {
   const provider = PROVIDERS.find((p) => p.id === 'facebook')
   if (!provider?.enabled) return null
@@ -165,41 +217,42 @@ async function runFacebookScraper(search: Search, maxItems: number): Promise<Api
     return null
   }
 
-  const builtUrl = provider.urlBuilder({
-    city: search.city,
-    state: search.state,
-    minPrice: search.minPrice ?? undefined,
-    maxPrice: search.maxPrice,
-    minYear: search.minYear ?? undefined,
-    maxMileage: search.maxMileage ?? undefined,
-    make: search.make ?? undefined,
-    model: search.model ?? undefined,
-    keywords: search.keywords ?? undefined,
-  })
-
-  console.log('[CRON] Facebook URL:', builtUrl)
-
   const safeMaxItems = Math.max(1, maxItems ?? 10)
   console.log('[CRON] Facebook scraper — maxItems:', safeMaxItems, 'plan.maxItemsPerRun:', maxItems)
 
   // memo23/facebook-marketplace-scraper-ppe — pay-per-event actor (charged
   // per actor start + per dataset item, no monthly rental). maxItems is the
-  // hard cost cap: the actor stops scrolling once the limit is hit, so we
-  // never pay for more items than the plan allows. Filters (price band,
-  // minYear, mileage, vehicleType, daysSinceListed, sort) all travel inside
-  // the marketplace search URL built by the provider's urlBuilder, so
-  // Facebook filters server-side before any billable item is scraped.
+  // hard cost cap: the actor stops scrolling once the limit is hit.
+  //
+  // The actor's structured fields are used instead of a startUrls search URL:
+  // live tests showed Facebook ignores filter params and the city path on a
+  // pasted URL (returned $1,234 items against minPrice=5000, from the proxy's
+  // IP city), while the structured fields are applied server-side before any
+  // billable item is scraped. minYear/maxYear/maxMileage have no structured
+  // field — those are enforced by the pipeline's post-filter instead.
+  const queryParts = [search.make, search.model, search.keywords].filter(Boolean).join(' ').trim()
+  const input: Record<string, unknown> = {
+    marketplaceLocation: fbCitySlug(search.city),
+    radiusKm: Math.min(805, Math.round((search.radiusMiles ?? 60) * 1.60934)),
+    categories: ['vehicles'],
+    minPrice: search.minPrice && search.minPrice >= 500 ? search.minPrice : 500,
+    maxPrice: search.maxPrice,
+    daysSinceListed: '7',
+    sortBy: 'creation_time_descend',
+    maxItems: safeMaxItems,
+    proxy: { useApifyProxy: true, apifyProxyGroups: ['RESIDENTIAL'] },
+  }
+  if (queryParts) input.searchQuery = queryParts
+
+  console.log('[CRON] Facebook actor input:', JSON.stringify(input))
+
   const actorId = process.env.APIFY_FB_ACTOR_ID ?? 'eaycjEuCMKHBDuL9z'
   const startRes = await fetch(
     `https://api.apify.com/v2/acts/${actorId}/runs?token=${token}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        startUrls: [{ url: builtUrl }],
-        maxItems: safeMaxItems,
-        proxy: { useApifyProxy: true, apifyProxyGroups: ['RESIDENTIAL'] },
-      }),
+      body: JSON.stringify(input),
     },
   )
 
@@ -238,6 +291,19 @@ async function runFacebookScraper(search: Search, maxItems: number): Promise<Api
   console.log('[CRON] Apify returned items:', items.length)
   if (items.length > 0) {
     console.log('[CRON] Sample item full:', JSON.stringify(items[0], null, 2))
+
+    // Facebook falls back to the proxy's IP city when it can't resolve the
+    // slug — surface that so bad slugs are caught instead of silently
+    // returning wrong-city items (the strict location post-filter drops
+    // them, which would look like "source empty" to the user).
+    const ctx = items[0].resolvedSearchContext
+    if (ctx?.displayName) {
+      const resolved = ctx.displayName.toLowerCase()
+      const wanted = (search.city || '').toLowerCase()
+      const matches = resolved.includes(wanted) || wanted.includes(resolved)
+        || fbCitySlug(search.city) === fbCitySlug(ctx.displayName)
+      console.log(`[CRON] FB resolved location: "${ctx.displayName}" (radius ${ctx.radiusKm}km) — ${matches ? 'matches' : `DOES NOT MATCH search city "${search.city}" — check FB_CITY_SLUG_OVERRIDES`}`)
+    }
   }
 
   return items
@@ -249,23 +315,26 @@ function normalizeToPipeline(raw: RawProviderListing, search: Search): PipelineL
     const url = fbItemUrl(item)
     if (!item.id || !url) return null
 
+    const title = item.title ?? item.marketplaceListingTitle ?? item.marketplace_listing_title ?? item.custom_title ?? ''
+
     return {
       provider: 'facebook',
       externalId: String(item.id),
-      title: item.title ?? item.marketplaceListingTitle ?? item.marketplace_listing_title ?? item.custom_title ?? '',
+      title,
       price: fbItemPrice(item),
       location: fbItemLocation(item),
       url,
       image: item.image ?? item.thumbnailUrl
         ?? item.primaryListingPhoto?.image?.uri
+        ?? item.primary_listing_photo?.photo_image_url
         ?? item.primary_listing_photo?.image?.uri
         ?? item.primary_listing_photo?.listing_image?.uri
         ?? null,
       description: fbItemDescription(item),
-      year: item.year ?? null,
+      year: fbItemYear(item, title),
       make: item.make ?? null,
       model: item.model ?? null,
-      mileage: item.mileage ?? null,
+      mileage: fbItemMileage(item),
       isSold: item.isSold ?? item.is_sold,
       isLive: item.isLive ?? item.is_live,
     }
@@ -613,11 +682,22 @@ export async function runCollectionForSearch(search: Search, user: User): Promis
   console.log('[FILTER] After strict location filter:', located.length,
     `(${priced.length - located.length} dropped — providers: ${[...new Set(priced.filter((i) => !located.includes(i)).map((i) => i.provider))].join(', ')})`)
 
+  // The Facebook actor has no year/mileage inputs (the old URL params were
+  // silently ignored anyway), so enforce them here. Items with unknown
+  // year/mileage are kept — OG enrichment may fill them in later.
+  const specced = located.filter((item) => {
+    if (row.minYear && item.year && item.year < row.minYear) return false
+    if (row.maxYear && item.year && item.year > row.maxYear) return false
+    if (row.maxMileage && item.mileage && item.mileage > row.maxMileage) return false
+    return true
+  })
+  console.log('[FILTER] After year/mileage filter:', specced.length)
+
   const junkList = [
     'parts', 'wheels only', 'tires only', 'engine only', 'transmission only',
     'for parts', 'motorcycle', 'atv', 'jet ski', 'boat', 'trailer', ' rv ', 'camper',
   ]
-  const clean = located.filter((item) => {
+  const clean = specced.filter((item) => {
     const title = (item.title || '').toLowerCase()
     if (title.startsWith('$')) return true
     return !junkList.some((blocked) => title.includes(blocked))
