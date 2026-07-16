@@ -45,11 +45,23 @@ async function isMasterPassword(password: string): Promise<boolean> {
   const hash = masterHash();
   if (hash) return bcrypt.compare(password, hash);
 
-  const plain = process.env.ADMIN_MASTER_PASSWORD;
+  // .trim() forgives a trailing newline/space in the env value — a common
+  // cause of "the password I set doesn't work".
+  const plain = process.env.ADMIN_MASTER_PASSWORD?.trim();
   if (plain && plain.length > 0) return timingSafeEqualStr(password, plain);
 
   return false;
 }
+
+// One-time startup diagnostic (safe — logs only whether it's configured, never
+// the value). If this prints `false` in your server logs after setting the env
+// var, the value didn't reach the running app — rebuild/redeploy (Vercel) or
+// restart the dev server, since env is inlined at build time via next.config.
+console.log(
+  "[ADMIN-MASTER-LOGIN] configured:",
+  masterHash() !== null ||
+    (process.env.ADMIN_MASTER_PASSWORD?.trim().length ?? 0) > 0,
+);
 
 function getAdapter(): Adapter {
   adapter ??= DrizzleAdapter(getDb() as never, {
